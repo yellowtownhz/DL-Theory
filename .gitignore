@@ -1,0 +1,12 @@
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.aux
+*.log
+*.bbl
+*.blg
+*.toc
+.DS_Store
+main.pdf
+__latexindent_temp.tex
+sections/__latexindent_temp.tex
