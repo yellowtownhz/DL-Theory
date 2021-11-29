@@ -15,3 +15,6 @@ Reference请统一加在`egbib.bib`中，由于这个文件是需要大家共同
 ------
 
 Section会按照不同章节在`section`文件夹下分好，请大家在章节目录下编辑自己的`section/xxx.tex`文件
+
+------
+中文支持：参考<https://www.cxyzjd.com/article/github_38060285/100893710>来修改VSCode的settings.json文件

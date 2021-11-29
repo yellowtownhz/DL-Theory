@@ -1,11 +1,15 @@
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.synctex
 *.aux
 *.log
 *.bbl
 *.blg
 *.toc
+*.dvi
+*.xml
+*-blx.bib
 .DS_Store
 main.pdf
 __latexindent_temp.tex
