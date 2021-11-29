@@ -1,1 +1,88 @@
-Shuxian Liang
+
+\subsection{Equation~(1.14)}
+
+\begin{align}
+I_{K,m} &= \int_{-\infty}^{+\infty}\left(
+    e^{-\frac{z^2}{2K}}z^{2m} 
+    \right) dz 
+\end{align}
+
+Based on partial integration: % 分部积分法
+\begin{equation}
+ \label{eq:partial_int}
+    \int_{a}^{b}{u(x)v^{'}(x)dx} =  {\left | u(x)v(x) \right |}_{a}^{b} - \int_{a}^{b}{u^{'}(x)v(x)dx} 
+\end{equation}
+
+
+        
+To make use of eq~\eqref{eq:partial_int}, we make $v=e^{-\frac{z^2}{2K}}$ and $u=-K z^{2m-1}$. Then we have:
+
+\begin{equation}
+\label{eq:1.14-1}
+    I_{K,m} 
+        = {\left | -K z^{2m-1} e^{-\frac{z^2}{2K}} \right |}_{-\infty}^{+\infty} - \int_{-\infty}^{+\infty}\left(
+            (-K z^{2m-1})^{'} e^{-\frac{z^2}{2K}}
+        \right) dz 
+\end{equation}
+
+Using L'Hospital's rule $\lim_{x\rightarrow c}\frac{f(x)}{g(x)} = \lim_{x\rightarrow c}\frac{f'(x)}{g'(x)}$, % 洛必达法则
+the left term of the eq~\eqref{eq:1.14-1} is equal to $0$. Then we transform the right term as follows.
+
+\begin{equation}
+    \begin{split}
+        I_{K,m} 
+            &= - \int_{-\infty}^{+\infty}\left(
+                (-K z^{2m-1})^{'} e^{-\frac{z^2}{2K}}
+            \right) dz \\
+            &= K(2m-1) \int_{-\infty}^{+\infty}\left(
+                z^{2m-2} e^{-\frac{z^2}{2K}}
+            \right) dz \\
+            &= K^1(2m-1) \times I_{K,m-1} \\
+            &= K^2 (2m-1)(2m-3) \times I_{K,m-2} \\
+            &= K^m (2m-1)(2m-3)\cdots 1 \times I_{K,0} \\
+            &= K^m (2m-1)!! \times \sqrt{2\pi K} 
+    \end{split}
+\end{equation}
+
+
+\subsection{Equation~(1.23)}
+
+Once we Taylor-expanded the exponential $Z_{K,J}/I_K = \exp{\frac{KJ^2}{2}}$, we have:
+
+
+\begin{equation}
+    \tiny
+    \begin{split}
+        \mathbb{E}\left[z^{2m}\right] 
+            &= \left \{ 
+                    \left ( \frac{d}{dJ}\right )^{2m}
+                    \left [ \sum_{k=0}^\infty{
+                        \frac{1}{k!} 
+                        \left ( \frac{K}{2} \right )^k 
+                        J^{2k}
+                    }
+                    \right ]
+                \right \} \\
+            &= 
+                \left ( \frac{d}{dJ}\right )^{2m}
+                \left \{ 
+                    \cdots +
+                    \left [
+                        \frac{1}{(k-1)!} 
+                        \left ( \frac{K}{2} \right )^{k-1} 
+                        J^{2k-2}
+                    \right ] +
+                    \left [
+                        \frac{1}{k!} 
+                        \left ( \frac{K}{2} \right )^k
+                        J^{2k}
+                    \right ]
+                    \left [
+                        \frac{1}{(k+1)!} 
+                        \left ( \frac{K}{2} \right )^{k+1} 
+                        J^{2k+2}
+                    \right ] +
+                    \cdots
+                \right \} \\
+    \end{split}
+\end{equation}
