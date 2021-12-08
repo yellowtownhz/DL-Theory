@@ -6,15 +6,71 @@
 
     \rightline{---Page $35$, Paragraph $2$}
 \end{quote}
-MLP 是最基本的神经网络，本书着重研究MLP中深度学习理论，并且也会简短介绍如何讲MLP中的理论推广到其他神经网络结构。
+MLP 是最基本的神经网络，本书着重研究MLP中的深度学习理论，也会简短介绍如何将MLP中的理论推广到其他结构的神经网络。
 
 \subsubsection{Function Approximation}
-一个深度学习模型本质上是一个函数$y=f(x)$，比如说，一个猫狗分类模型的函数输入$x$是一个图像，输出$y$是猫的概率
+一个机器学习模型本质上是一个函数$y=f(x)$，比如说，一个猫狗分类模型可以看做是一个从输入图像$x$，到输出概率$y$的映射函数。不同的模型对应的函数$f(x;\theta)$具有不同的参数$\theta$，当我们调整参数来提升模型的性能的时候，本质上是在通过调整函数的参数来接近那个最优的函数：$f(x;\theta^*)\approx f(x)$，这个函数估计的过程就叫做一个``机器学习算法（Learning Algorithm）''
 
 \subsubsection{MLP Architecture}
+MLP的计算过程为：
+\begin{equation}
+    z_i^{(1)}(x_\alpha)\equiv b_i^{(1)}+\sum^{n_0}_{j=1}W_{ij}^{(1)}x_{j:\alpha}
+\end{equation}
+\begin{equation}
+    z_i^{(l+1)}(x_\alpha)\equiv b_i^{(l+1)}+\sum^{n_l}_{j=1}W_{ij}^{(l+1)}\sigma(z_j^{(l)}(x_\alpha))
+\end{equation}
+其中，MLP一共有$L$层，每一层$l$有$n_l$个神经元，$\sigma(z)$为激活函数
 
 \subsubsection{Activation Functions}
+\begin{figure}[!ht]
+    \includegraphics[width=\textwidth]{images/2_activation_function.bmp}
+    \caption{经常用到的9种激活函数}
+    \label{fig:2-activation}
+\end{figure}
+图\ref{fig:2-activation}中展示了经常用到的九种激活函数。
+
+第一种perceptron是一种fire or not的开关形式，问题在于传递的信息只有二进制的两种状态，信息太少。
+
+第二种sigmoid是平滑版本的perceptron，输入的绝对值越大，和perceptron越接近。
+
+第三种tanh是放缩加平移版本的sigmoid。
+
+第五种linear和第六种ReLU以及leaky ReLU有一个共同的性质：尺度等变性（原文这里叫scale-invariant，按照意思应该是等变性才对）。
+\begin{equation}
+    \sigma(\lambda z)=\lambda \sigma(z)
+\end{equation}
+满足这个性质的函数只有一种形式（可以通过对$z$求导$\sigma^{'}(\lambda z)=\sigma^{'}(z)$证明）：
+\begin{equation}
+    \sigma(z)=\left\{
+        \begin{aligned}
+            a_{+}z, z\geq 0,\\
+            a_{-}z, z< 0.
+        \end{aligned}
+    \right.
+\end{equation}
+其中包括linear（$a_{+}=a{-}-a$）,ReLU（$a_{+}=1, a_{-}=0$）和leaky ReLU（$a_{+}=1, a_{-}=a$）。
+
+第七种softplus函数，在$z\gg 1$的时候约等于$z$，在$z<0$的时候以指数级趋近于零（$\sigma(z)\approx e^{-|z|}$），$\sigma(0)=log(2)$
+\begin{equation}
+    \sigma(z)=log(1+e^z)
+\end{equation}
+
+第八种SWISH函数是sigmoid函数乘上了一个$z$，在$z>0$的时候就像$\sigma(z)\approx z$，在$z<0$的时候就想$\sigma(z)\approx 0$，并且，乘零的操作保证了$\sigma(0)=0$
+\begin{equation}
+    \sigma(z)=\frac{z}{1+e^{-z}}
+\end{equation}
+
+最后一种GeLU（Gaussian Error Linear Unit）函数长的和SWISH函数差不多：
+\begin{equation}
+    \sigma(z)=[\frac{1}{2}+\frac{1}{2}erf(\frac{z}{\sqrt{2}})]\times z
+\end{equation}
+性质和SWISH函数差不多，其中erf$(z)$函数长的和tanh函数差不多。
+
+最后三种平滑版本ReLU的函数都不符合尺度等变性。
 
 \subsubsection{Initialization Distribution of Biases and Weights}
+为什么深度学习中在初始化MLP的bias和weight的时候都会选择高斯分布？
+
+从定性上讲，
 
 \subsubsection{Output Distribution}
