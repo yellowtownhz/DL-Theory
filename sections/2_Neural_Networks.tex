@@ -71,6 +71,25 @@ MLP的计算过程为：
 \subsubsection{Initialization Distribution of Biases and Weights}
 为什么深度学习中在初始化MLP的bias和weight的时候都会选择高斯分布？
 
-从定性上讲，
+定义一个分布$p(x)$的信息熵为：
+\begin{equation}
+    H[p]=-\int p(x)\log p(x)dx
+\end{equation}
+在满足$p(x)$积分为1，方差固定，均值固定三个约束条件下，可以转换成拉格朗日函数形式：
+\begin{equation}
+    \begin{aligned}
+    \mathcal{L}[p]=&\lambda_1(\int p(x)dx-1)+\lambda_2(\mathbb{E}[x]-\mu)+\lambda_3(\mathbb{E}[(x-\mu)^2]-\sigma^2)+H[p]\\
+    =&\int(\lambda_1p(x)+\lambda_2p(x)x+\lambda_3p(x)(x-\mu)^2-p(x)\log p(x))dx-\lambda_1-\\
+    &\mu\lambda_2-\sigma^2\lambda_3
+    \end{aligned}
+\end{equation}
+对$p$求导，并使其为0，可得：
+\begin{equation}
+    \forall x,\frac{\delta}{\delta p(x)}\mathcal{L}=\lambda_1+\lambda_2x+\lambda_3(x-\mu)^2-1-\log p(x)=0
+\end{equation}
+获得$p(x)$的最优解：
+\begin{equation}
+    p(x)=\exp (-\lambda_1-\lambda_2x+\lambda_3(x-\mu)^2+1)
+\end{equation}
+在满足三个限定条件的情况下，设定参数$\lambda_1=log \sigma\sqrt{2x}, \lambda_2=0, \lambda_3=-\frac{1}{2\sigma}$可获得$p(x)$的形式：$p(x)=\mathcal{N}(x;\mu,\sigma^2)$
 
-\subsubsection{Output Distribution}
