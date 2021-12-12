@@ -1,33 +1,133 @@
+本书最重要的结论之一，是 Wide and Deep Neural Networks 实际上都是由 \textbf{近高斯分布（Nearly-Guassian Distributions）} 控制的。为此，读者需要掌握高斯积分（Gaussian Integration）和摄动理论（Perturbation Theory）两项工具。本章包含对这两项工具的介绍，以及其他相关的统计学概念的概要。
 
-\subsection{Equation~(1.14)}
+% 摄动理论使用一些特别的数学方法来对于很多不具精确解的问题给出近似解，这些方法从相关的较简单问题的精确解开始入手。摄动理论将原本问题分为具有精确解的较简单部分与不具精确解的微扰部分。[1]摄动理论适用的问题通常具有以下性质：通过加入一个微扰项于较简单部分的数学表述，可以计算出整个问题的近似解。
 
-\begin{align}
-I_{K,m} &= \int_{-\infty}^{+\infty}\left(
-    e^{-\frac{z^2}{2K}}z^{2m} 
-    \right) dz 
-\end{align}
+第1节，介绍了高斯积分，包括：（1）高斯分布的相关计算工具；（2）维克定理（Wick's Theorem）。
 
-Based on partial integration: % 分部积分法
+
+第2节，包括：
+（1）高斯分布的期望值；
+（2）可观测量（Observables）：
+ 基于可观测量，我们可以使用多次重复实验来学习一个概率分布的性质；
+（3）矩（moment）/ Full M-point Correlator： 在本章中，主要用于表征高斯分布。
+（4）累积量（cumulant）/ Connected M-point Correlator：用于描述一个非高斯分布之于高斯性的偏离。
+
+
+
+第3节，包括：
+（1）概率分布的Action Representation：即Negative Log Probability；
+（2）基于Action，对高斯分布进行变形，以简洁地表示非高斯分布；
+（3）对近高斯分布，它之于高斯性的偏离，可以用action上的小联结（small couplings）来表示出来；
+（4）摄动理论可以用于把非高斯的 couplings 与可观测量（如Connected Correlator）联系起来；
+（5）通过摄动理论来处理couplings，我们可以用若干项高斯积分的和来表示一项近高斯分布的任意Correlator。
+
+\subsection{Gaussian Integrals}
+\subsubsection{单变量高斯积分}
+
+最简单的高斯函数：
 \begin{equation}
- \label{eq:partial_int}
-    \int_{a}^{b}{u(x)v^{'}(x)dx} =  {\left | u(x)v(x) \right |}_{a}^{b} - \int_{a}^{b}{u^{'}(x)v(x)dx} 
+    \begin{split}
+    e^{-\frac{z^2}{2}}
+    \end{split}
+\end{equation}
+要计算对应的高斯分布，则需要对该函数normalize。为了找到合适的normalization，我们计算高斯积分。
+\begin{equation}
+    \begin{split}
+    I_1 = \int_{-\infty}^{+\infty}
+    \left(
+        e^{-\frac{z^2}{2}}
+    \right) dz
+    \end{split}
+\end{equation}
+求解该积分，我们求其平方($z\rightarrow x/y$)，然后转换为极坐标表达($x,y\rightarrow rcos\phi, rsin\phi$)。
+\begin{equation}
+    \begin{split}
+    {I_1}^2 &= \int_{-\infty}^{+\infty} \int_{-\infty}^{+\infty}
+    \left(
+        e^{-\frac{x^2+y^2}{2}}
+    \right) dxdy \\
+    &= \int_{0}^{\infty} \int_{0}^{2\pi}
+    \left(
+        r e^{-\frac{r^2}{2}} 
+    \right) dr d\phi \\
+    &= 2\pi \int_{0}^{\infty} 
+    \left(
+        r e^{-\frac{r^2}{2}} 
+    \right) dr \\
+    &= 2\pi \left | -e^{-\frac{r^2}{2}}\right |{}_{r=0}^{r=\infty} \\
+    &= 2\pi
+    \end{split}
+\end{equation}
+因此，$I_1=\sqrt{2\pi}$，所以，单位方差的高斯概率分布表示为：
+\begin{equation}
+    \begin{split}
+    p(z) = \frac{1}{\sqrt{2\pi}} e^{-\frac{z^2}{2}}
+    \end{split}
+\end{equation}
+将此结论拓展至方差 $K>0$，对应的normalization常数$I_K = \sqrt{2\pi K}$，所以，方差为$K$，中心点偏移（数学期望）为$s$的高斯概率分布表示为：
+\begin{equation}
+    \begin{split}
+    p(z) = \frac{1}{\sqrt{2\pi K}} e^{-\frac{(z-s)^2}{2K}}
+    \end{split}
 \end{equation}
 
-
-        
-To make use of eq~\eqref{eq:partial_int}, we make $v=e^{-\frac{z^2}{2K}}$ and $u=-K z^{2m-1}$. Then we have:
-
+假设高斯分布的期望为$0$，对于基于该高斯分布的可观测量函数$O(z)$，它的数学期望表示为：
 \begin{equation}
+    \begin{split}
+    \mathbb{E}[O(z)] = \int_{-\infty}^{+\infty} 
+    \left(
+        p(z) O(z)
+    \right) dz 
+    = \frac{1}{\sqrt{2\pi K}} \int_{-\infty}^{+\infty} 
+    \left(
+        e^{-\frac{z^2}{2K}} O(z)
+    \right) dz
+    \end{split}
+\end{equation}
+当$O(z)=z^M$时，对应的期望值被称之为\textbf{距（moments）}，代入可得：
+\begin{equation}
+    \begin{split}
+    \label{eq:1.12}
+    \mathbb{E}[z^M] = \int_{-\infty}^{+\infty} 
+    \left(
+        p(z) O(z)
+    \right) dz 
+    = \frac{1}{\sqrt{2\pi K}} \int_{-\infty}^{+\infty} 
+    \left(
+        e^{-\frac{z^2}{2K}} z^M
+    \right) dz
+    \end{split}
+\end{equation}
+现在，我们希望求上式的积分项的值。对于任意的奇数$M$，该积分为$0$（关于y轴对称）。对于任意的偶数$M=2m$，该积分被进一步表示为$I_{K,m}$，即：
+\begin{equation}
+    \begin{split}
+    I_{K,m} 
+    = \int_{-\infty}^{+\infty} 
+    \left(
+        e^{-\frac{z^2}{2K}} z^{2m}
+    \right) dz
+    \end{split}
+\end{equation}
+
+\textbf{求$\mathbb{E}[z^{2m}]$的方法1}。基于分部积分法: % 分部积分法
+\begin{equation}
+    \begin{split}
+ \label{eq:partial_int}
+    \int_{a}^{b}{u(x)v^{'}(x)dx} =  {\left | u(x)v(x) \right |}_{a}^{b} - \int_{a}^{b}{u^{'}(x)v(x)dx} 
+    \end{split}
+\end{equation}
+我们使 $u=-K z^{2m-1}$，$v=e^{-\frac{z^2}{2K}}$，有：
+\begin{equation}
+    \begin{split}
 \label{eq:1.14-1}
     I_{K,m} 
         = {\left | -K z^{2m-1} e^{-\frac{z^2}{2K}} \right |}_{-\infty}^{+\infty} - \int_{-\infty}^{+\infty}\left(
             (-K z^{2m-1})^{'} e^{-\frac{z^2}{2K}}
         \right) dz 
+    \end{split}
 \end{equation}
-
-Using L'Hospital's rule $\lim_{x\rightarrow c}\frac{f(x)}{g(x)} = \lim_{x\rightarrow c}\frac{f'(x)}{g'(x)}$, % 洛必达法则
-the left term of the eq~\eqref{eq:1.14-1} is equal to $0$. Then we transform the right term as follows.
-
+由洛必达法则，即$\lim_{x\rightarrow c}\frac{f(x)}{g(x)} = \lim_{x\rightarrow c}\frac{f'(x)}{g'(x)}$, % 洛必达法则
+公式~\eqref{eq:1.14-1} 的左侧项等于 $0$，右侧项转化为下式：
 \begin{equation}
     \begin{split}
         I_{K,m} 
@@ -43,18 +143,145 @@ the left term of the eq~\eqref{eq:1.14-1} is equal to $0$. Then we transform the
             &= K^m (2m-1)!! \times \sqrt{2\pi K} 
     \end{split}
 \end{equation}
-
-
-\subsection{Equation~(1.23)}
-
-Once we Taylor-expanded the exponential $Z_{K,J}/I_K = \exp{\frac{KJ^2}{2}}$, we have:
-
-
+为简洁，上式最后一行，我们使$(2m-1)!!=(2m-1)(2m-3)\cdots 1$。最终，代入公式~\eqref{eq:1.12} （文中1.12），我们希望求的moments $\mathbb{E}[z^{M}]$ （i.e., $\mathbb{E}[z^{2m}]$），被表示为：
 \begin{equation}
-    \tiny
+    \begin{split}
+    \mathbb{E}[z^{2m}] 
+        =\frac{I_{K,m}}{\sqrt{2\pi K}} 
+        = K^m (2m-1)!!
+    \end{split}
+\end{equation}
+上式被称之为\textbf{单变量高斯分布的维克定理（Wick's theorem for single-variable Gaussian distributions）}。
+
+
+\textbf{求$\mathbb{E}[z^{2m}]$的方法2}。这里我们介绍第二种求解方法，该方法可以更容易地拓展至多变量高斯分布。首先，我们为高斯积分引入了一个额外的项，称为Source Term，标记为$J$，对应的高斯积分记为$Z_{K,J}$：
+\begin{equation}
+    \begin{split}
+    \label{eq:1.17}
+    Z_{K,J} = \int_{-\infty}^{+\infty} 
+        \left(
+            e^{-\frac{z^2}{2K} + Jz}
+        \right) dz
+    \end{split}
+\end{equation}
+当$J$为$0$时，上式即为普通的高斯积分，即$Z_{K,J=0} = I_K$。在物理学中，$Z_{K,J}$ 又被称为 partition function （配分函数） with source。这项积分可以作为moments的生成函数\footnote{大意是，为了推导目标，提出了一个包含额外项的函数。基于该函数推导出所需的形式后，通过限定一些条件来消除额外项（如使$J=0$），从而令该函数等价于目标，迂回地完成了目标的推导。}。我们对指数进行变形，有：
+\begin{equation}
+    \begin{split}
+    -\frac{z^2}{2K} + Jz = - \frac{(z-JK)^2}{2K} + \frac{KJ^2}{2}
+    \end{split}
+\end{equation}
+再代入原式~\eqref{eq:1.17}，可得：
+\begin{equation}
+    \begin{split}
+        \label{eq:1.19}
+        Z_{K,J} & = \int_{-\infty}^{+\infty} 
+        \left(
+            e^{- \frac{(z-JK)^2}{2K} + \frac{KJ^2}{2}}
+        \right) dz \\
+        & = e^{\frac{KJ^2}{2}} \int_{-\infty}^{+\infty} 
+        \left(
+            e^{- \frac{(z-JK)^2}{2K}}
+        \right) dz \\
+        & = e^{\frac{KJ^2}{2}} I_K 
+          = e^{\frac{KJ^2}{2}} \sqrt{2\pi K} 
+    \end{split}
+\end{equation}
+现在，把$I_{K,m}$和包含$J$的高斯积分关联起来，观察到以下等式成立（文中1.20）：
+\begin{equation}
+    \begin{split}
+    \label{eq:1.20}
+    I_{K,m} 
+    = \int_{-\infty}^{+\infty} 
+    \left(
+        e^{-\frac{z^2}{2K}} z^{2m}
+    \right) dz
+    = \left[
+        (\frac{d}{dJ})^{2m} \int_{-\infty}^{+\infty}{
+            (e^{-\frac{z^2}{2K} + Jz})    
+        dz
+        }
+    \right] \bigg|_{J=0} 
+    \end{split}
+\end{equation}
+由于原文未解释上式的推导过程，我们在此处简单地验证：
+\begin{equation}
+    \begin{split}
+       &\left[
+            (\frac{d}{dJ})^{2m} \int_{-\infty}^{+\infty}{
+                (e^{-\frac{z^2}{2K} + Jz})    
+            dz
+            }
+        \right] \bigg|_{J=0} \\
+        =
+        &\left[
+            \int_{-\infty}^{+\infty}{
+                \left(
+                    e^{-\frac{z^2}{2K}} 
+                    \left(
+                        (\frac{d}{dJ})^{2m} e^{Jz})
+                    \right)
+                \right)   
+            dz
+            }
+        \right] \bigg|_{J=0} \\
+        =
+        &\left[
+            \int_{-\infty}^{+\infty}{
+                \left(
+                    e^{-\frac{z^2}{2K}} 
+                    z^{2m} e^{Jz})
+                \right)
+            dz
+            }
+        \right] \bigg|_{J=0} \\
+        =
+        &\left[
+            \int_{-\infty}^{+\infty}{
+                \left(
+                    e^{-\frac{z^2}{2K}} 
+                    z^{2m}
+                \right)
+            dz
+            }
+        \right] \\
+    \end{split}
+\end{equation}
+注：（1）物理问题中，默认微分和求导操作的顺序可以互换，在上式的第二行，沿用该common practice；（2）此处$|_{J=0}$代表函数在$J=0$处的值，在最后一步中代入$J=0$以消除$J$。
+
+% 因为式~\eqref{eq:1.20}中的积分项即为$\frac{Z_{K,J}}{I_K}$（式~\eqref{eq:1.17}），且已有$Z_{K,J}=e^{\frac{KJ^2}{2}} \sqrt{2\pi K} $ （式~\eqref{eq:1.19}），可以替换积分中的项未
+% 我们对 $Z_{K,J}/I_K = \exp{\frac{KJ^2}{2}}$ 泰勒展开，有：
+言归正传，我们所求的是：
+\begin{equation}
+    \begin{split}
+    \mathbb{E}[z^{2m}] = \frac{I_{K,m}}{\sqrt{2\pi K}}
+    \end{split}
+\end{equation}
+将式~\eqref{eq:1.20}中的右式代入：
+\begin{equation}
+    \begin{split}
+    \mathbb{E}[z^{2m}] 
+    & = \frac{I_{K,m}}{\sqrt{2\pi K}} \\
+    & = \frac{1}{\sqrt{2\pi K}}\left[
+        (\frac{d}{dJ})^{2m} \int_{-\infty}^{+\infty}{
+            (e^{-\frac{z^2}{2K} + Jz})    
+        dz
+        }
+    \right] \bigg|_{J=0} \\
+    & = \frac{1}{\sqrt{2\pi K}}\left[
+        (\frac{d}{dJ})^{2m} 
+            Z_{K,J}   
+    \right] \bigg|_{J=0} \\
+    & = \left[
+        (\frac{d}{dJ})^{2m} 
+            e^{\frac{KJ^2}{2}}
+    \right] \bigg|_{J=0} 
+    \end{split}
+\end{equation}
+其中，根据式~\eqref{eq:1.17}和式~\eqref{eq:1.19}，上式的最后两行通过$e^{-\frac{z^2}{2K}+Jz } \rightarrow Z_{K,J} \rightarrow {e^{\frac{KJ^2}{2}}}{\sqrt{2\pi K}}$ 变形可得。对$e^{\frac{KJ^2}{2}}$进行泰勒展开，有：
+\begin{equation}
     \begin{split}
         \mathbb{E}\left[z^{2m}\right] 
-            &= \left \{ 
+            & = \left \{ 
                     \left ( \frac{d}{dJ}\right )^{2m}
                     \left [ \sum_{k=0}^\infty{
                         \frac{1}{k!} 
@@ -62,27 +289,585 @@ Once we Taylor-expanded the exponential $Z_{K,J}/I_K = \exp{\frac{KJ^2}{2}}$, we
                         J^{2k}
                     }
                     \right ]
-                \right \} \\
-            &= 
-                \left ( \frac{d}{dJ}\right )^{2m}
-                \left \{ 
-                    \cdots +
-                    \left [
-                        \frac{1}{(k-1)!} 
-                        \left ( \frac{K}{2} \right )^{k-1} 
-                        J^{2k-2}
-                    \right ] +
-                    \left [
-                        \frac{1}{k!} 
-                        \left ( \frac{K}{2} \right )^k
-                        J^{2k}
-                    \right ]
-                    \left [
-                        \frac{1}{(k+1)!} 
-                        \left ( \frac{K}{2} \right )^{k+1} 
-                        J^{2k+2}
-                    \right ] +
-                    \cdots
-                \right \} \\
+                \right \} \bigg|_{J=0} \\
+            & = \left ( \frac{d}{dJ} \right )^{2m}
+                \left [
+                    \frac{1}{m!} 
+                    \left ( \frac{K}{2} \right )^m 
+                    J^{2m}
+                \right ]
+                \\
+            & = 
+                {
+                        \frac{2m!}{m!} 
+                        \left ( \frac{K}{2} \right )^m 
+                } \\
+            & = K^m (2m-1)!!
     \end{split}
 \end{equation}
+在上式第一行的求和项中：（1）当$k<m$，会被求导操作消除至$0$；（2）当$k>m$，代入$J=0$后为$0$；（3）当$k=m$时，求导完后，$J$恰好被消除。单变量高斯分布的维克定理证明完毕。
+
+\subsubsection{多变量高斯积分}
+多变量的高斯函数可以表示为（未假设各变量相互独立）：
+\begin{equation}
+    \begin{split}
+    \exp{
+        \left[
+            - \frac{1}{2}
+            \sum_{\mu,\nu=1}^N
+            {z_{\mu}(K^{-1})_{\mu\nu}z_{\nu}}
+        \right]
+    }
+    \end{split}
+\end{equation}
+其中，$(K^{-1})_{\mu\nu}$ 是协方差矩阵$K_{\mu\nu}$的逆。为了简化后续的表达，我们设定$\delta_{uv}$，使：
+\begin{equation}
+    \begin{split}
+        \delta_{uv} =
+         \left\{
+            \begin{matrix}
+            1, & \mu = \nu\\ 
+            0, & \mu \neq \nu
+            \end{matrix}
+        \right.
+    \end{split}
+\end{equation}
+
+现在，类似地，为了基于该高斯函数构建概率分布，我们需要求它的积分作为normalization factor：
+\begin{equation}
+    \begin{split}
+        I_K &= \int d^N z \exp{
+            \left[
+                - \frac{1}{2}
+                \sum_{\mu,\nu=1}^N
+                {z_{\mu}(K^{-1})_{\mu\nu}z_{\nu}}
+            \right]
+        }\\
+        &= \int_{-\infty}^{\infty} dz_1 \cdots \int_{-\infty}^{\infty} dz_N 
+        \exp 
+        \left[
+            - \frac{1}{2} \sum_{\mu,\nu=1}^{N} 
+            {z_{\mu}(K^{-1})_{\mu\nu}z_{\nu}}
+        \right]
+    \end{split}
+\end{equation}
+% TODO
+对于$N\times N$的方阵 $K_{\mu,\nu}$，总是存在一个正交矩阵$O_{\mu,\nu}$，将$K_{\mu,\nu}$对角化为$(OKO^T)_{\mu,\nu}=\lambda_\mu\delta_{\mu,\nu}$，其中，$\lambda_{\mu=1,\cdots,N}$ 是 $K_{\mu,\nu}$的特征值；同时，该正交矩阵将$K_{\mu,\nu}$的逆对角化为$(OK^{-1}O^T)_{\mu,\nu}=(1/\lambda_\mu)\delta_{\mu,\nu}$。通过引入正交矩阵，我们将指数项变换为（参考原文1.28）：
+\begin{equation}
+    \begin{split}
+        - \frac{1}{2} \sum_{\mu,\nu=1}^{N} 
+            {z_{\mu}(K^{-1})_{\mu\nu}z_{\nu}}
+            &= - \frac{1}{2} \sum_{\mu,\nu=1}^{N} (Oz)_\mu (OK^{-1}O^T)_{\mu\nu} (Oz)\nu \\
+            &= - \frac{1}{2} \sum_{\mu=1}^N \frac{1}{\lambda_\mu} (Oz)_\mu^2
+    \end{split}
+\end{equation}
+将该项代入原式，同时令$u_\mu = (Oz)_{\mu}$ \footnote{注：文中默认$d^N z = d^N u$， why？}，即令原式从多变量高斯积分变为单变量高斯积分的乘积：
+\begin{equation}
+    \begin{split}
+        I_K &= \int_{-\infty}^{\infty} du_1  \cdots \int_{-\infty}^{\infty} du_N 
+        \exp{
+            \left(
+                -\frac{u_1^2}{2\lambda_1} - \cdots - \frac{u_N^2}{2\lambda_N}
+            \right)
+        } \\
+        &= \prod_{\mu=1}^N \left[
+            \int_{-\infty}^{\infty} du_\mu \exp
+            \left(
+                - \frac{u_\mu^2}{2\lambda_\mu}
+            \right)
+        \right] \\
+        &= \sqrt{\prod_{\mu=1}^N 2\pi \lambda_{\mu}}
+    \end{split}
+\end{equation}
+在线代中，矩阵的特征值的乘积等于该矩阵的行列式（i.e., $|K|$），所以，上式可以表示为：
+\begin{equation}
+    \begin{split}
+        I_K 
+        &= \sqrt{
+            \left | 
+            2\pi K
+            \right |
+            }
+    \end{split}
+\end{equation}
+得到该normalization因子后，均值为$0$，协方差为$K_{\mu,\nu}$的多变量高斯概率表示为：
+\begin{equation}
+    \begin{split}
+        P(z)
+        &= \frac{1}{\sqrt{\left | 2\pi K\right |}}
+        \exp{\left[
+            - \frac{1}{2} \sum_{\mu,\nu=1}^{N} 
+            {z_{\mu}K^{\mu\nu}z_{\nu}}
+        \right]}
+    \end{split}
+\end{equation}
+为简洁，我们使用$K^{\mu\nu}$来表示$(K^{-1})_{\mu\nu}$。类似单变量的情况，我们用：
+\begin{equation}
+    \begin{split}
+        P(z)
+        &= \frac{1}{\sqrt{\left | 2\pi K\right |}}
+        \exp{\left[
+            - \frac{1}{2} \sum_{\mu,\nu=1}^{N} 
+            {(z-s)_{\mu}K^{\mu\nu}(z-s)_{\nu}}
+        \right]}
+    \end{split}
+\end{equation}
+来表示均值/期望$\mathbb{E}[z_\mu]=s$的多变量高斯分布。
+
+接下来，让我们考虑多变量高斯分布的moments。
+\begin{equation}
+    \begin{split}
+        \label{eq:1.36}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_M}]
+        &= \int{d^{N}\!z}\;
+        [p(z)z_{\mu_1}\cdots z_{\mu_M}]\\
+        &= \frac{1}{\sqrt{|2\pi K|}}
+        \int{d^{N}\!z}\;
+        \left[
+        \exp 
+        \left(
+            - \frac{1}{2} \sum_{\mu,\nu=1}^N z_{\mu}K^{\mu\nu}z_{\nu}
+        \right)
+        z_{\mu_1}\cdots z_{\mu_M}
+        \right] \\
+        &= \frac{I_{K,(\mu_1,\cdots,\mu_M)}}{I_K}
+    \end{split}
+\end{equation}
+其中：
+\begin{equation}
+    \begin{split}
+        I_{K,(\mu_1,\cdots,\mu_M)} = \int{d^{N}\!z}\;
+        \left[
+        \exp 
+        \left(
+            - \frac{1}{2} \sum_{\mu,\nu=1}^N z_{\mu}K^{\mu\nu}z_{\nu}
+        \right)
+        z_{\mu_1}\cdots z_{\mu_M}
+        \right] 
+    \end{split}
+\end{equation}
+然后，与单变量中的方法2相似地，我们引入Source Term $J^{\mu}$：
+\begin{equation}
+    \begin{split}
+    \label{eq:1.38}
+        Z_{K,J} = \int{d^{N}\!z}\;
+        \left[
+        \exp 
+        \left(
+            - \frac{1}{2} \sum_{\mu,\nu=1}^N z_{\mu}K^{\mu\nu}z_{\nu} + \sum_{\mu=1}^N J^{\mu} z_{\mu}
+        \right)
+        \right] 
+    \end{split}
+\end{equation}
+且已知，对$Z_{K,J}$求导$M$次后，恰好可以消除我们所需的$I_{K,(\mu_1,\cdots,\mu_M)}$，即：
+\begin{equation}
+    \begin{split}
+    \label{eq:1.39}
+        \left[\frac{d}{dJ^{\mu_1}}\cdots \frac{d}{dJ^{\mu_M}} Z_{K,J} \right] \bigg|_{J^\mu=0} = I_{K,(\mu_1,\cdots,\mu_M)}
+    \end{split}
+\end{equation}
+类似单变量中的做法，我们先对$Z_{K,J}$中的指数项进行变换：
+\begin{equation}
+    \begin{split}
+        & - \frac{1}{2} \sum_{\mu,\nu=1}^N z_{\mu}K^{\mu\nu}z_{\nu} + \sum_{\mu=1}^N J^{\mu} z_{\mu} \\
+        = & - \frac{1}{2} \sum_{\mu,\nu=1}^N
+        \left(z_\mu - \sum_{\rho=1}^N{K_{\mu\rho}J^{\rho}} \right)
+        K^{\mu\nu}
+        \left(z_\nu - \sum_{\lambda=1}^N{K_{\mu\lambda}J^{\lambda}} \right) + 
+        \frac{1}{2} \sum_{\mu,\nu=1}^{N} J^{\mu}K_{\mu\nu}J^{\nu} \\
+        = & - \frac{1}{2} \sum_{\mu,\nu=1}^N
+        w_\mu
+        K^{\mu\nu}
+        w_\nu + 
+        \frac{1}{2} \sum_{\mu,\nu=1}^{N} J^{\mu}K_{\mu\nu}J^{\nu} 
+    \end{split}
+\end{equation}
+在最后一行中，我们用$w_\mu$/$w_\nu$来替换$\left(z_\mu - \sum_{\rho=1}^N{K_{\mu\rho}J^{\rho}} \right)$/$\left(z_\nu - \sum_{\lambda=1}^N{K_{\mu\lambda}J^{\lambda}} \right)$ （直接换元，积分不变）。
+将上式代入式~\eqref{eq:1.38}，然后可得：
+\begin{equation}
+    \begin{split}
+        Z_{K,J}
+        & = 
+        \exp \left( \frac{1}{2} \sum_{\mu,\nu=1}^{N} J^{\mu}K_{\mu\nu}J^{\nu} \right)
+        \int d^N\!w
+        \exp
+        \left(
+        - \frac{1}{2} \sum_{\mu,\nu=1}^N
+        w_\mu
+        K^{\mu\nu}
+        w_\nu 
+        \right) \\
+        & =
+        \exp \left( \frac{1}{2} \sum_{\mu,\nu=1}^{N} J^{\mu}K_{\mu\nu}J^{\nu} \right)  \sqrt{|2\pi K|}
+    \end{split}
+\end{equation}
+将上式、式~\eqref{eq:1.36}和式~\eqref{eq:1.39}联立，在仅考虑偶数的$M=2m$的情况下，有：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_{2m}}]
+        &= \frac{I_{K,(\mu_1,\cdots,\mu_{2m})}}{I_K} \\
+        &= \frac{1}{I_K} \left[\frac{d}{dJ^{\mu_1}}\cdots \frac{d}{dJ^{\mu_{2m}}} Z_{K,J} \right] \bigg|_{J^\mu=0} \\
+    \end{split}
+\end{equation}
+对指数项进行泰勒展开，最终得到：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_{2m}}] 
+        &=\frac{1}{2^m m!} 
+        \frac{d}{dJ^{\mu_1}}\cdots \frac{d}{dJ^{\mu_{2m}}}
+        \left(
+            \sum_{\mu,\nu=1}^N J^{\mu} K_{\mu\nu} J^{\nu}
+        \right)^{m}
+    \end{split}
+\end{equation}
+我们通过举例来进一步理解上式。当$2m=2$，代入，有：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}z_{\mu_{2}}] 
+        &=\frac{1}{2} 
+        \frac{d}{dJ^{\mu_1}}\frac{d}{dJ^{\mu_{2}}}
+        \left(
+            J^{\mu_1} K_{\mu_1\mu_1} J^{\mu_1} +
+            J^{\mu_1} K_{\mu_1\mu_2} J^{\mu_2} +
+            J^{\mu_2} K_{\mu_2\mu_1} J^{\mu_1} +
+            J^{\mu_2} K_{\mu_2\mu_2} J^{\mu_2}
+        \right) \\ 
+        &= K_{\mu1\mu2}
+    \end{split}
+\end{equation}
+由于协方差矩阵$K$是对称的，显然有$K_{\mu_1\mu_2}=K_{\mu_2\mu_1}$。
+类似地，当$2m=4$时，有：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}] 
+        &= K_{\mu_1\mu_2}K_{\mu_3\mu_4} + 
+        K_{\mu_1\mu_3}K_{\mu_2\mu_4} + 
+        K_{\mu_1\mu_4}K_{\mu_2\mu_3}
+    \end{split}
+\end{equation}
+进一步推广：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_{2m}}] 
+        &= \sum_{all\;pairing} {
+            K_{\mu_{k_1}\mu_{k_2}}
+            \cdots
+            K_{\mu_{k_{2m-1}}\mu_{k_{2m}}}
+        }
+    \end{split}
+\end{equation}
+上述的每一个$K_{\mu\nu}$成为Wick contraction，求和中的每一个项会由$m$个不同的Wick contractions组成，求和操作一共有$(2m-1)!!$个项。
+上述公式，就是我们所说的维克定理（Wick's theorem）。
+
+Good. You are now a Gaussian sensei. Exhale, and then say as Neo would say, “I know Gaussian integrals.”
+
+
+
+\subsection{Probability, Correlation and Statistics, and All That}
+
+非高斯概率分布也同样有数学期望（expectation）和距（moments）的定义。在这一节中，我们会重新介绍它们，以便我们理解可用于描述Wide Neural Networks的近高斯分布。
+
+$p(z)$是包含$N$维随机变量$z_\mu$的高斯分布$p(z)$。在实际情况中，我们无法直接测量到这个高斯分布的统计数据（如期望），因此我们通过测量 关于$z_\mu$的函数 来间接地达成这个目的。 这个函数，我们称之为可观测量，记为 $O(z)$。因而该可观测量的数学期望表示为：
+\begin{equation}
+    \begin{split}
+        \label{eq:1.46}
+        \mathbb{E}[O(z)] 
+        &= \int d^N\!z\;[p(z)O(z)]
+    \end{split}
+\end{equation}
+可观测量，实际上对应了我们展开实验时，用于联系理论模型和实际概率分布时测量的数值。具体来说，我们通过重复实验来直接测量这些可观测量，获得它们的统计数据，然后将这些统计数据与理论模型的预测值进行比较。
+% 那么，
+% 问题1：通过测量可观察量，我们可以了解到关于实际分布$p(z)$的哪些信息呢？
+% 问题2：给定未知的分布，是否存在一组可观测量，让我们可能充分地探测（probe） $p(z)$，使得我们可以进一步地预测关于随机变量$z_\mu$的未来实验结果？
+
+首先，让我们考虑我们已经遇见过的一种可观测量 \textbf{moments}（统计学名称），或称之为 \textbf{Full M-point correlators} （物理学名称），它的数学期望为：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_M}] 
+        &= \int d^N\!z\;[p(z)z_{\mu_1}\cdots z_{\mu_M}]
+    \end{split}
+\end{equation}
+一般来说，当我们可以得到所有的full M-point correlators 后，我们就可以计算任意的其他的 可解析函数 $O(z)$ 的数学期望了，即，使用泰勒展开来将其转化为 若干项的full M-point correlators 的和：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[O(z)] 
+        &= \mathbb{E} \left[
+            \sum_{M=0}^{\infty}{\frac{1}{M!}\sum_{\mu_1,\cdots,\mu_M=1}^N{
+                \frac{\partial^M O}{\partial_{z_{\mu_1}}\cdots \partial_{z_{\mu_M}}} \bigg |_{z=0} z_{\mu_1}\cdots z_{\mu_M}
+            }}
+        \right] \\
+        &= \sum_{M=0}^{\infty}{
+            \frac{1}{M!} \sum_{\mu_1,\cdots,\mu_M=1}^N{
+                \frac{\partial^M O}{\partial_{z_{\mu_1}}\cdots \partial_{z_{\mu_M}}} \bigg |_{z=0} \mathbb{E}[z_{\mu_1}\cdots z_{\mu_M}]
+            }
+        }
+    \end{split}
+\end{equation}
+其中，最后一行，我们将泰勒系数提到了期望符号之前，这利用了该期望的线性性质（参见式~\eqref{eq:1.46}）。
+% 泰勒展开在z=0处的泰勒展开式：https://zh.wikipedia.org/wiki/%E6%B3%B0%E5%8B%92%E5%85%AC%E5%BC%8F
+% 然而，上式中使用所有 M-point Correlators，在实际操作中是不可行的 \footnote{为了可靠地估计M-point correlator，这要求我们进行足够多的重复实验，并在每个实验中同时计算 $M$个 Components，操作代价高。}。（TODO承上启下的话）% 能不能使用更简单的形式，使用有限的项，来充分地描述可观测量？
+这样的话，我们可以通过有限项（泰勒展开的前几项）的full correlators，来对几乎所有的有用的分布进行描述。
+
+对于full correlators，我们还可以发现它的另外一些有用的性质。对于均值为$0$，方差为$K_{\mu\nu}$的$N$维高斯分布，基于维克定理，它的$2m$-point correlator为：
+\begin{equation}
+    \begin{split}
+        \label{eq:1.50}
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_{2m}}] 
+        &= \sum_{all\;pairing}{
+            K_{\mu_{k_1}\mu_{k_2}} \cdots K_{\mu_{k_{2m-1}}\mu_{k_{2m}}}
+        }
+    \end{split}
+\end{equation}
+它实际上可以由$K_{\mu\nu}$中的$N(N+1)/2$个独立的项来准确描述。而$K_{\mu\nu}$本身，是$2$-point correlator。因此，对于均值为$0$的高斯分布来说，实际上完全没有必要测量或记录更高阶的correlators，因为它们全都是由方差/$2$-point correlator 即 $K_{\mu\nu}$ 约束的。
+
+进一步地，我们也期望有一种对称于式~\eqref{eq:1.50}的形式，在利用有限的项/实验的情况下，描述非高斯分布。为了该目的，对于非高斯分布，我们引入一种有效的可观测量，称为 cumulants （统计学名称），或 connected $M$-point correlators （物理学名称）。具体来说，connected $1$-point correlator定义为：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_\mu] |_{cnt} = \mathbb{E}[z_\mu]
+    \end{split}
+\end{equation}
+即该分布的均值。然后，connected $2$-point correlator定义为：
+\begin{equation}
+    \begin{split}
+        \mathbb{E}[z_\mu z_\nu]|_{cnt} &= \mathbb{E}[z_\mu z_\nu] - \mathbb{E}[z_\mu]\mathbb{E}[z_\nu] \\
+        &= \mathbb{E}[(z_\mu-\mathbb{E}[z_\mu])]\mathbb{E}[(z_\nu-\mathbb{E}[z_\nu])] \\
+        &= Conv[z_\mu, z_\nu]
+    \end{split}
+\end{equation}
+即该分布的协方差。
+类似于高斯分布，对于所有 $M$ 为奇数的近高斯分布，它的connected $M$-point correlators为$0$。因此，我们跳过connected $3$-point correlator，将connected $4$-point correlator定义为：
+\begin{equation}
+    \begin{split}
+        & \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}]|_{cnt} \\
+        = &  
+        \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}]  
+        - \mathbb{E}[z_{\mu_1}z_{\mu_2}]\mathbb{E}[z_{\mu_3}z_{\mu_4}]
+        - \mathbb{E}[z_{\mu_1}z_{\mu_3}]\mathbb{E}[z_{\mu_2}z_{\mu_4}]
+        - \mathbb{E}[z_{\mu_1}z_{\mu_4}]\mathbb{E}[z_{\mu_2}z_{\mu_3}]
+    \end{split}
+\end{equation}
+联立多变量维克定理的公式（式~\eqref{eq:1.50}），易得，对于高斯分布，$\mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}]|_{cnt}=0$，而对于非高斯分布，$\mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}]|_{cnt}$描述了该分布之于高斯性的偏离。注意，connected $4$-point correlator是最简单的用于描述非高斯性的数学工具之一。
+
+让我们拓展至更一般的形式。对任意$M$，我们可以用Connected M-point correlator (moments) 来表示 Full M-point correlator (cumulants)：
+\begin{equation}
+    \begin{split}
+        \label{eq:1.59}
+        & \mathbb{E}[z_{\mu_1}\cdots z_{\mu_M}] \\
+        = &  
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_M}]|_{cnt} \\
+        & + \sum_{all\;subdivisions}{
+            \mathbb{E}\left[
+                z_{\mu_{k_{1}^{[1]}}} \cdots z_{\mu_{k_{\nu_1}^{[1]}}}
+            \right]\bigg |_{cnt}
+        }
+        \cdots
+        {
+            \mathbb{E}\left[
+                z_{\mu_{k_{1}^{[s]}}} \cdots z_{\mu_{k_{\nu_s}^{[s]}}}
+            \right]\bigg |_{cnt}
+        }
+    \end{split}
+\end{equation}
+其中，求和中的乘积项是对$M$个变量（$z_{\mu_1}\cdots z_{\mu_M}$）再分组 \footnote{ 包含connected odd-point correlators的乘积项均为$0$，略去。}，如，对于$M=6$：
+\begin{equation}
+    \begin{split}
+        & \mathbb{E}[z_{\mu_1}\cdots z_{\mu_6}] \\
+        = &  
+        \mathbb{E}[z_{\mu_1}\cdots z_{\mu_6}] |_{cnt}  \\
+        & + \sum{
+            \mathbb{E}[ z_{\mu_1}z_{\mu_2}] |_{cnt}
+            \mathbb{E}[ z_{\mu_3}z_{\mu_4}] |_{cnt}
+            \mathbb{E}[ z_{\mu_5}z_{\mu_6}] |_{cnt}
+        } \\
+        & + [14\;other\;(2,2,2)\;subvisions] \\
+        & + \sum{
+            \mathbb{E}[ z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}] |_{cnt}
+            \mathbb{E}[ z_{\mu_5}z_{\mu_6}] |_{cnt} 
+        } \\
+        & + [14\;other\;(4,2)\;subvisions] 
+    \end{split}
+\end{equation}
+类似地，对高斯分布，connected $6$-point correlators为零，这是因为式子中的connected $4$-point correlator为$0$（同样因为高斯分布），剩下的$15$组$(2,2,2)$的subvisions恰好与$\mathbb{E}[z_{\mu_1}\cdots z_{\mu_6}]$抵消了（根据维克定理，它的值为同样的$15$组pairing）。
+
+总的来说，根据式~\eqref{eq:1.59}，对于一项分布，我们只需要先计算它的Full M-point correlators，然后重新组织一下表达式，就能计算它的connected M-point correlators了。由此，\textbf{近高斯分布}可以定义为：\textbf{a distribution for which all the connected correlators for M > 2 are small}. 实际上，神经网络越宽，它对应的近高斯分布的connected $4$-point correlator就越小（更高阶的connected correlator更小）。对于这些近高斯分布，我们只需要使用前几项connected correlators （lower point）就能对它们进行比较准确的描述了。
+
+
+\subsection{Nearly-Gaussian Distributions}
+在上一节中，我们通过易于测量的connected correlators来定义了近高斯分布。接下来，我们通过引入一个\textbf{action $S(z)$} （物理学名称），来将可观测量与实际概率分布$p(z)$的functional form联系起来。
+
+Action $S(z)$，通过以下方式来定义一个概率分布：
+\begin{equation}
+    \begin{split}
+        p(z) \varpropto e^{-S(z)}
+    \end{split}
+\end{equation}
+在统计学中，$S(z)$也被称为 negative log probability。为了让$p(z)$成为概率分布，我们对它进行normalization，我们需满足：
+\begin{equation}
+    \begin{split}
+        \int d^N\!z\;p(z) =1
+    \end{split}
+\end{equation}
+从而引入配分函数来作为normalization factor：% 配分函数就是归一化函数，只是人们在研究归一化的过程中，发现利用这个配分函可以计算出系统的全部性质。
+\begin{equation}
+    \begin{split}
+        Z = \int d^N\!z\;e^{-S(z)}
+    \end{split}
+\end{equation}
+因而，通过$S(z)$，可以定义一项概率分布为:
+\begin{equation}
+    \begin{split}
+        p(z) = \frac{e^{-S(z)}}{Z}
+    \end{split}
+\end{equation}
+反过来，给定一项概率分布，我们可以计算它的action为$S(z) = -\log[p(z)] + C$，或简单地，$S(z) = -\log[p(z)]$ （这也是为什么它就是negative log probability）。
+
+对于高斯分布，由于我们已经知道了它的functional form，它的action可以直接计算出来：
+\begin{equation}
+    \begin{split}
+        \label{eq:1.66}
+        S(z) = \frac{1}{2} \sum_{\mu,\nu=1}^N K^{\mu\nu}z_\mu z\nu
+    \end{split}
+\end{equation}
+对应的配分函数为：
+\begin{equation}
+    \begin{split}
+        Z = \int d^N\!z\;e^{-S(z)} = I_K = \sqrt{|2\pi K|}
+    \end{split}
+\end{equation}
+式~\eqref{eq:1.66}中的action被称为quadratic（二次的） action。
+
+高斯分布的积分/期望，会被用于计算非高斯分布的数学期望。因此，为了区分一般期望和高斯期望，前者用$\mathbb{E}[\cdot]$表示，后者用$\left<\cdot\right>_K$表示。例如，对于可观测量$O(z)$，它的高斯期望为：
+\begin{equation}
+    \begin{split}
+        \left< O(z) \right> = \frac{1}{ \sqrt{|2\pi K|}}
+        \int \left[\prod_{\mu=1}^N dz_\mu\right]
+        \exp \left(
+            -\frac{1}{2} \sum_{\mu,\nu=1}^{N}K^{\mu\nu}z_\mu z_\nu
+            \right) 
+        O(z)
+    \end{split}
+\end{equation}
+然后，维克定理可以写成：
+\begin{equation}
+    \begin{split}
+    \left< z_{\mu_1}\cdots z_{\mu_{2m}} \right>_K
+        &= \sum_{all\;pairing} {
+            K_{\mu_{k_1}\mu_{k_2}}
+            \cdots
+            K_{\mu_{k_{2m-1}}\mu_{k_{2m}}}
+        }
+    \end{split}
+\end{equation}
+
+给定一个近高斯分布，已知它的connected $4$-point correlator 很小但不为零，即：
+\begin{equation}
+    \begin{split}
+    \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}]
+        &= o(\epsilon)
+    \end{split}
+\end{equation}
+其中，$\epsilon \ll 1$。对于神经网络，我们后续会提到，$\epsilon$为$1/width$。此处的$o(\epsilon)$代表一个理想函数（高斯函数）加上了一个小的扰动（此处的小扰动即connected $4$-point  correlator）。% 参见摄动理论的介绍：https://zhuanlan.zhihu.com/p/107093458；https://kexue.fm/archives/1878。
+
+然后，我们将高斯分布变形为：一个quadratic（二次的） action，加上一个小的四次项。实际上，这样令该高斯函数产生一个小的connected $4$-point correlator（因而变为非高斯函数）。对该变形的action $S(z)$，我们称之为quartic （四次的） action：
+\begin{equation}
+    \begin{split}
+        S(z) = \frac{1}{2} \sum_{\mu,\nu=1}^N K^{\mu\nu}z_\mu z\nu +
+        \frac{\epsilon}{4!}\sum_{\mu,\nu,\rho,\lambda=1}^N
+        V^{\mu\nu\rho\lambda}z_{\mu}z_{\nu}z_{\rho}z_{\lambda}
+    \end{split}
+\end{equation}
+其中，$\epsilon V^{\mu\nu\rho\lambda}$被称为quartic coupling，它是一个$(N\times N\times N\times N)$的张量（在所有轴上对称）。其中，因子${1}/{4!}$是为了补偿对称的四条轴导致的over-summation。
+
+然后，让我们建立起quartic coupling和connected $4$-point correlator的对应关系（也就是使通过quartic coupling求得的数学期望恰好等于connected $4$-point correlator）。
+为了计算connected $4$-point correlator，我们需要利用摄动理论，来对$\epsilon$进行一阶展开（即先求高斯情况下的精确解）。
+\begin{equation}
+    \begin{split}
+        Z & = \int d^N\!z\;e^{-S(z)} \\
+        & = \int d^N\!z\; \exp \left(
+            -\frac{1}{2} \sum_{\mu,\nu=1}^N K^{\mu\nu}z_\mu z\nu -
+            \frac{\epsilon}{4!}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}z_{\rho_1}z_{\rho_2}z_{\rho_3}z_{\rho_4}
+        \right) \\
+        & = \sqrt{|2\pi K|} \left<\exp\left(
+            - \frac{\epsilon}{24}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}z_{\rho_1}z_{\rho_2}z_{\rho_3}z_{\rho_4}
+        \right)\right>_K
+    \end{split}
+\end{equation}
+由于我们要求的是基于高斯函数的精确解，所以如上式最后一行变形。
+对上式的指数部分，我们对其进行一阶泰勒展开（$o(\epsilon^2)$为余项）：
+\begin{equation}
+    \begin{split}
+        Z 
+        & = \sqrt{|2\pi K|} \left<
+            1 - \frac{\epsilon}{24}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}z_{\rho_1}z_{\rho_2}z_{\rho_3}z_{\rho_4} + o(\epsilon^2)
+        \right>_K \\
+        & = \sqrt{|2\pi K|} \left[
+            1 - \frac{\epsilon}{24}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}
+            \left<z_{\rho_1}z_{\rho_2}z_{\rho_3}z_{\rho_4}\right>_K
+            + o(\epsilon^2)
+        \right] \\
+        & = \sqrt{|2\pi K|} \left[
+            1 - \frac{\epsilon}{24}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}
+            \left(
+                K_{\rho_1\rho_2}K_{\rho_3\rho_4} + 
+                K_{\rho_1\rho_3}K_{\rho_2\rho_4} +
+                K_{\rho_1\rho_4}K_{\rho_2\rho_3}
+            \right)
+            + o(\epsilon^2)
+        \right] \\
+        & = \sqrt{|2\pi K|} \left[
+            1 - \frac{\epsilon}{8}\sum_{\rho_1\rho_2\rho_3\rho_4}^N
+            V^{\rho_1\rho_2\rho_3\rho_4}
+            K_{\rho_1\rho_2}K_{\rho_3\rho_4}
+            + o(\epsilon^2)
+        \right] \\
+    \end{split}
+\end{equation}
+其中，第$3$行利用了维克定理，最后一行利用了quartic coupling的对称性。
+然后，基于上式，我们可以求出$2$-pointer Correlator（摄动理论加泰勒展开，推导太长了，详见文中1.74）：
+\begin{equation}
+    \begin{split}
+        & \mathbb{E}[z_{\mu_1}z_{\mu_2}] = \frac{1}{Z}\int \left[
+            \prod_{\mu}d\!z_{\mu}
+        \right]
+        e^{-S(z)} z_{\mu_1} z_{\mu_2} \\
+        = & K_{\mu_1\mu_2} - \frac{\epsilon}{2} \sum_{\rho_1\rho_2\rho_3\rho_4}^N
+        V^{\rho_1\rho_2\rho_3\rho_4}
+        K_{\mu_1\rho_1}K_{\mu_2\rho_2}K_{\rho_3\rho_4}
+        + o(\epsilon^2)
+    \end{split}
+\end{equation}
+
+最后，我们可以求出full $4$-point correlator（摄动理论加泰勒展开，推导太长了，详见文中1.75，1.76,1.77）：
+\begin{equation}
+    \begin{split}
+        & \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}] = \frac{1}{Z}\int \left[
+            \prod_{\mu}d\!z_{\mu}
+        \right]
+        e^{-S(z)} z_{\mu_1} z_{\mu_2}z_{\mu_3} z_{\mu_4} \\
+        = & \mathbb{E}[{z_{\mu_1}z_{\mu_2}}]\mathbb{E}[{z_{\mu_3}z_{\mu_4}}]
+        +\mathbb{E}[{z_{\mu_1}z_{\mu_3}}]\mathbb{E}[{z_{\mu_2}z_{\mu_4}}]
+        +\mathbb{E}[{z_{\mu_1}z_{\mu_4}}]\mathbb{E}[{z_{\mu_2}z_{\mu_3}}]\\
+        & -\epsilon \sum_{\rho_1\rho_2\rho_3\rho_4}
+            V^{\rho_1\rho_2\rho_3\rho_4}
+            K_{\mu_1\rho_1}K_{\mu_2\rho_2}K_{\mu_3\rho_3}K_{\mu_4\rho_4}
+        +o(\epsilon^2)
+    \end{split}
+\end{equation}
+对应的connected $4$-point correlator为（用以描述之于高斯性的偏离）：
+\begin{equation}
+    \begin{split}
+        & \mathbb{E}[z_{\mu_1}z_{\mu_2}z_{\mu_3}z_{\mu_4}] |_{cnt} = 
+        -\epsilon \sum_{\rho_1\rho_2\rho_3\rho_4}
+            V^{\rho_1\rho_2\rho_3\rho_4}
+            K_{\mu_1\rho_1}K_{\mu_2\rho_2}K_{\mu_3\rho_3}K_{\mu_4\rho_4}
+        +o(\epsilon^2)
+    \end{split}
+\end{equation}
+如上式，quartic coupling $\epsilon V^{\rho_1\rho_2\rho_3\rho_4}$ 用以控制该分布之于高斯分布的偏离。
+
+除了quadratic action和quartic action，还有更高次的coupling。然而，实际上，基于quartic action的分布已经足够复杂，能够捕捉神经网络中大部分的显著非高斯；与此同时，它在数学上又相对简单以供人们分析处理。
