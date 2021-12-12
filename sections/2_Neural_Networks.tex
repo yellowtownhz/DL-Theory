@@ -48,14 +48,14 @@ MLP的计算过程为：
         \end{aligned}
     \right.
 \end{equation}
-其中包括linear（$a_{+}=a{-}-a$）,ReLU（$a_{+}=1, a_{-}=0$）和leaky ReLU（$a_{+}=1, a_{-}=a$）。
+其中包括linear（$a_{+}=a_{-}=a$）,ReLU（$a_{+}=1, a_{-}=0$）和leaky ReLU（$a_{+}=1, a_{-}=a$）。
 
 第七种softplus函数，在$z\gg 1$的时候约等于$z$，在$z<0$的时候以指数级趋近于零（$\sigma(z)\approx e^{-|z|}$），$\sigma(0)=log(2)$
 \begin{equation}
     \sigma(z)=log(1+e^z)
 \end{equation}
 
-第八种SWISH函数是sigmoid函数乘上了一个$z$，在$z>0$的时候就像$\sigma(z)\approx z$，在$z<0$的时候就想$\sigma(z)\approx 0$，并且，乘零的操作保证了$\sigma(0)=0$
+第八种SWISH函数是sigmoid函数乘上了一个$z$，在$z>0$的时候就像$\sigma(z)\approx z$，在$z<0$的时候就像$\sigma(z)\approx 0$，并且，乘零的操作保证了$\sigma(0)=0$
 \begin{equation}
     \sigma(z)=\frac{z}{1+e^{-z}}
 \end{equation}
@@ -69,7 +69,7 @@ MLP的计算过程为：
 最后三种平滑版本ReLU的函数都不符合尺度等变性。
 
 \subsubsection{Initialization Distribution of Biases and Weights}
-为什么深度学习中在初始化MLP的bias和weight的时候都会选择高斯分布？
+\emph{为什么深度学习中在初始化MLP的bias和weight的时候都会选择高斯分布？}
 
 定义一个分布$p(x)$的信息熵为：
 \begin{equation}
@@ -91,5 +91,5 @@ MLP的计算过程为：
 \begin{equation}
     p(x)=\exp (-\lambda_1-\lambda_2x+\lambda_3(x-\mu)^2+1)
 \end{equation}
-在满足三个限定条件的情况下，设定参数$\lambda_1=log \sigma\sqrt{2x}, \lambda_2=0, \lambda_3=-\frac{1}{2\sigma}$可获得$p(x)$的形式：$p(x)=\mathcal{N}(x;\mu,\sigma^2)$
+在满足三个限定条件的情况下，设定参数$\lambda_1=log \sigma\sqrt{2\pi}, \lambda_2=0, \lambda_3=-\frac{1}{2\sigma}$可获得$p(x)$的形式：$p(x)=\mathcal{N}(x;\mu,\sigma^2)$
 
