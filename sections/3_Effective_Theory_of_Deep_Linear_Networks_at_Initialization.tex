@@ -1,1 +1,105 @@
-Xu Shen
+这一章主要从线性神经网络进行推导，相当于是激活函数为线性函数的MLP网络。
+
+\subsection{Deep Linear Networks}
+
+线性神经网络中，$l+1$层第$i$个原子与$l$层原子的迭代关系如下:
+\begin{equation}
+    z_{i;\alpha}^{(l+1)} = b_i^{(l+1)} + \sum_{j=1}^{n_l} W_{ij}^{l+1}z_{j;\alpha}^{(l)},
+\end{equation}
+这里$\alpha$用来表示不同分布的输入（\xu{这里不是太清楚$\alpha$的含义, 原文也没有进行任何解释}）。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
+\begin{equation}
+    z_{i;\alpha}^{(l)} = \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
+                W_{ij_{l-1}}^{(l)} W_{j_{l-1}j_{l-2}}^{(l-1)} \cdots W_{j_1j_0}^{(1)} x_{j_0;\alpha}
+              = \sum_{j=1}^{n_0} \mathcal{W}_{ij}^{(l)} x_{j;\alpha}.
+\end{equation}
+
+Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
+\begin{equation}
+    \mathcal{W}_{ij}^{(l)} = \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
+                W_{ij_{l-1}}^{(l)} W_{j_{l-1}j_{l-2}}^{(l-1)} \cdots W_{j_1j}^{(1)}.
+\end{equation}
+
+设定每一层权重的协方差是固定的（$C_W^{(l)} = C_W$）且为零均值，参数之间相互独立:
+\begin{equation}
+    \mathbb{E}[W_{ij}^{(l)} = 0], ~~ \mathbb{E}[W_{i_1j_1}^{(l)}W_{i_2j_2}^{(l)}] 
+                                    = \delta_{i_1i_2}\delta_{j_1j_2}\frac{C_W}{n_{l-1}}
+    \label{eq:expectation}
+\end{equation}
+(\xu{why $n_{l-1}$ here?}) 这里$\delta_{ij} = 1 ~ if ~ i=j, else ~ \delta_{ij} = 0$.
+
+要研究$z^{(l)}$的分布问题，按照高斯分布的研究方式的话，主要关注$z^{(l)}$的均值和方差。均值推导如下:
+\begin{equation}
+    \begin{aligned}
+    \mathbb{E}[z_{i;\alpha}^{(l)}] =& \mathbb{E}[\sum_{j=1}^{n_0} \mathcal{W}_{ij}^{(l)} x_{j;\alpha}] \\
+     =& \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
+       \mathbb{E}[W_{ij_{l-1}}^{(l)}] \mathbb{E}[W_{j_{l-1}j_{l-2}}^{(l-1)}]
+       \cdots \mathbb{E}[W_{j_1j_0}^{(1)}] x_{j_0;\alpha} = 0
+    \end{aligned}
+\end{equation}
+这里用到了层与层之间参数相互独立的假设。接下来就是要研究$z^{(l)}$的协方差分布的问题。
+
+\subsection{Criticality [物理学临界状态]}
+
+\subsubsection{数学推导}
+这一节首先研究一下两个原子之间的协方差$\mathbb{E}[z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}]$，
+因为协方差是否为$0$决定了各原子分布是否为高斯分布（相互独立的服从高斯分布的变量的和也为高斯分布，如果不独立，分布将变得难以分析）。
+
+\begin{equation*}
+    \begin{aligned}
+   \mathbb{E} [z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}] =& \sum_{j_1,j_2=1}^{n_0} 
+            \mathbb{E} [W_{i_1j_1}^{(1)}x_{j_1;\alpha_1}W_{i_2j_2}^{(1)}x_{j_2;\alpha_2}] \\
+    =& \sum_{j_1,j_2=1}^{n_0} \mathbb{E} [W_{i_1j_1}^{(1)}W_{i_2j_2}^{(1)}]x_{j_1;\alpha_1}x_{j_2;\alpha_2},
+    \end{aligned}
+\end{equation*}
+代入公式 \ref{eq:expectation}，然后把第二个$\delta_{j_1j_2}$合并一下, 可以简化为:
+\begin{equation*}
+             = \sum_{j_1,j_2=1}^{n_0} \frac{C_W}{n_0} 
+             \delta_{i_1i_2}\delta_{j_1j_2}x_{j_1;\alpha_1}x_{j_2;\alpha_2}
+             = \delta_{i_1i_2}C_W \frac{1}{n_0}\sum_{j=1}^{n_0}x_{j;\alpha_1}x_{j;\alpha_2}.
+\end{equation*}
+类似地，可以得到从$l$到第$l+1$的递推公式:
+\begin{equation}
+    \mathbb{E}[z_{i_1;\alpha_1}^{(l+1)} z_{i_2;\alpha_2}^{(l+1)}] = 
+        \delta_{i_1i_2}C_W \frac{1}{n_l}\sum_{j=1}^{n_l}\mathbb{E} 
+            [z_{j;\alpha_1}^{(l)}z_{j;\alpha_2}^{(l)}].
+    \label{eq:l-2-lp1}
+\end{equation}
+对任意两个由输入维度归一化之后的内积定义如下:
+\begin{equation*}
+    G_{\alpha_1\alpha_2}^{(0)} \equiv \frac{1}{n_0} \sum_{i=1}^{n_0} x_{i;\alpha_1}x_{i;\alpha_2}, ~~
+    G_{\alpha_1\alpha_2}^{(l)} \equiv \frac{1}{n_l} \sum_{j=1}^{n_l} 
+        \mathbb{E}[z_{j;\alpha_1}^{(l)}z_{j;\alpha_2}^{(l)}],
+\end{equation*}
+根据这个定义以及公式\ref{eq:l-2-lp1}，可以把从$0$到$1$以及从$l$到$l+1$递归地写成:
+\begin{equation}
+    \mathbb{E}[z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}] = \delta_{i_1i_2}C_W G_{\alpha_1\alpha_2}^{(0)},
+\end{equation}
+\begin{equation}
+    G_{\alpha_1\alpha_2}^{(l+1)} = 
+        \frac{1}{n_{l+1}} \sum_{j=1}^{n_{l+1}} \mathbb{E}[z_{j;\alpha_1}^{(l+1)}z_{j;\alpha_2}^{(l+1)}] 
+        = \frac{1}{n_{l+1}}\sum_{j=1}^{n_{l+1}} \delta_{jj}C_W G_{\alpha_1\alpha_2}^{(l)}
+        = C_W G_{\alpha_1\alpha_2}^{(l)},
+\end{equation}
+由此，可以得到由两个输入$(x_{\alpha_1}, x_{\alpha_2})$协方差$G_{\alpha_1\alpha_2}^{(0)}$传递到第
+$l$层的幅度为:
+\begin{equation}
+    G_{\alpha_1\alpha_2}^{(l)} = (C_W)^l G_{\alpha_1\alpha_2}^{(0)}.
+    \label{eq:recursion}
+\end{equation} 
+
+\subsubsection{物理学解释}
+根据迭代公式 \ref{eq:recursion}, 当$C_W > 1$, 随着层数$l$递增，$G_{\alpha_1\alpha_2} \to \infty$ (exploding,
+numerical instability); 当 $C_W < 1$, $G_{\alpha_1\alpha_2} \to 0$ (valishing, loss of information), 
+原文中称之为``trivial fixed point''. 这里是从协方差传递的角度进行分析， 
+\emph{神经网络初始化策略研究中，有类似的结论，通过研究单个原子的均值和方差随层数增加的变化，提出了xavier初始化策略}.
+(\xu{action: 附上reference}). 当然，第$L$层的原子的方差/幅度也可以通过如下公式得到（均值为$0$）:
+\begin{equation*}
+    G_{\alpha\alpha}^L = \mathbb{E} [\frac{1}{n_L} \sum_{j=1}^{n_L}(z_{j;\alpha}^{(L)})^2].
+\end{equation*}
+接上文，当$C_W=1$的时候，各层的协方差都是固定的 
+$G_{\alpha_1\alpha_2}^{(l)} = G_{\alpha_1\alpha_2}^{(0)} \equiv G_{\alpha_1\alpha_2}^*$. 这里
+协方差保持一致的意义在于，输入数据的结构信息(structure)在网络传递的过程中得到了保留。
+
+\subsection{Fluctuations [物理学中的扰动]}
+上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系，基本思路是拆分为$2$个原子
+之间协方差的组合。
