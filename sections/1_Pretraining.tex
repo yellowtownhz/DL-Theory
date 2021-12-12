@@ -2,23 +2,24 @@
 
 % 摄动理论使用一些特别的数学方法来对于很多不具精确解的问题给出近似解，这些方法从相关的较简单问题的精确解开始入手。摄动理论将原本问题分为具有精确解的较简单部分与不具精确解的微扰部分。[1]摄动理论适用的问题通常具有以下性质：通过加入一个微扰项于较简单部分的数学表述，可以计算出整个问题的近似解。
 
-第1节，介绍了高斯积分，包括：（1）高斯分布的相关计算工具；（2）维克定理（Wick's Theorem）。
+第1节，介绍了高斯积分，包括：（1）单变量高斯分布和多变量高斯分布；（2）维克定理（Wick's Theorem）。
 
 
-第2节，包括：
+第2节，是从高斯分布到近高斯分布的过渡，包括：
 （1）高斯分布的期望值；
 （2）可观测量（Observables）：
  基于可观测量，我们可以使用多次重复实验来学习一个概率分布的性质；
-（3）矩（moment）/ Full M-point Correlator： 在本章中，主要用于表征高斯分布。
+（3）矩（moment）/ Full M-point Correlator： 用于表征高斯分布。
 （4）累积量（cumulant）/ Connected M-point Correlator：用于描述一个非高斯分布之于高斯性的偏离。
+（5）近高斯分布的定义。
 
 
 
-第3节，包括：
+第3节，通过引入action，介绍近高斯分布的计算工具包括：
 （1）概率分布的Action Representation：即Negative Log Probability；
 （2）基于Action，对高斯分布进行变形，以简洁地表示非高斯分布；
-（3）对近高斯分布，它之于高斯性的偏离，可以用action上的小联结（small couplings）来表示出来；
-（4）摄动理论可以用于把非高斯的 couplings 与可观测量（如Connected Correlator）联系起来；
+（3）对近高斯分布，它之于高斯性的偏离，可以用action上的small couplings来表示出来；
+（4）摄动理论可以用于把非高斯的 couplings 与可观测量（如Connected Correlator）对应起来；
 （5）通过摄动理论来处理couplings，我们可以用若干项高斯积分的和来表示一项近高斯分布的任意Correlator。
 
 \subsection{Gaussian Integrals}
@@ -588,6 +589,7 @@ $p(z)$是包含$N$维随机变量$z_\mu$的高斯分布$p(z)$。在实际情况�
     \end{split}
 \end{equation}
 一般来说，当我们可以得到所有的full M-point correlators 后，我们就可以计算任意的其他的 可解析函数 $O(z)$ 的数学期望了，即，使用泰勒展开来将其转化为 若干项的full M-point correlators 的和：
+\xian{重新理一下逻辑}
 \begin{equation}
     \begin{split}
         \mathbb{E}[O(z)] 
