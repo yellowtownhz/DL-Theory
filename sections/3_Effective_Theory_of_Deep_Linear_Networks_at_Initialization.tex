@@ -6,7 +6,7 @@
 \begin{equation}
     z_{i;\alpha}^{(l+1)} = b_i^{(l+1)} + \sum_{j=1}^{n_l} W_{ij}^{l+1}z_{j;\alpha}^{(l)},
 \end{equation}
-这里$\alpha$用来表示不同分布的输入（\xu{这里不是太清楚$\alpha$的含义, 原文也没有进行任何解释}）。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
+这里$\alpha$用来表示不同的输入样本。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
 \begin{equation}
     z_{i;\alpha}^{(l)} = \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
                 W_{ij_{l-1}}^{(l)} W_{j_{l-1}j_{l-2}}^{(l-1)} \cdots W_{j_1j_0}^{(1)} x_{j_0;\alpha}
@@ -57,6 +57,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
              \delta_{i_1i_2}\delta_{j_1j_2}x_{j_1;\alpha_1}x_{j_2;\alpha_2}
              = \delta_{i_1i_2}C_W \frac{1}{n_0}\sum_{j=1}^{n_0}x_{j;\alpha_1}x_{j;\alpha_2}.
 \end{equation*}
+这里稍微用到了维克定理的做法。
 类似地，可以得到从$l$到第$l+1$的递推公式:
 \begin{equation}
     \mathbb{E}[z_{i_1;\alpha_1}^{(l+1)} z_{i_2;\alpha_2}^{(l+1)}] = 
@@ -69,6 +70,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
     G_{\alpha_1\alpha_2}^{(0)} \equiv \frac{1}{n_0} \sum_{i=1}^{n_0} x_{i;\alpha_1}x_{i;\alpha_2}, ~~
     G_{\alpha_1\alpha_2}^{(l)} \equiv \frac{1}{n_l} \sum_{j=1}^{n_l} 
         \mathbb{E}[z_{j;\alpha_1}^{(l)}z_{j;\alpha_2}^{(l)}],
+    \label{eq:2corr-def}
 \end{equation*}
 根据这个定义以及公式\ref{eq:l-2-lp1}，可以把从$0$到$1$以及从$l$到$l+1$递归地写成:
 \begin{equation}
@@ -101,5 +103,67 @@ $G_{\alpha_1\alpha_2}^{(l)} = G_{\alpha_1\alpha_2}^{(0)} \equiv G_{\alpha_1\alph
 协方差保持一致的意义在于，输入数据的结构信息(structure)在网络传递的过程中得到了保留。
 
 \subsection{Fluctuations [物理学中的扰动]}
-上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系，基本思路是拆分为$2$个原子
-之间协方差的组合。
+上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系($4$-point correlator)，
+基本思路是拆分为$2$个原子之间协方差的组合。
+跟公式 \ref{eq:2corr-def} 一样的定义，$4$阶归一化内积可以定义为：
+\begin{equation}
+    G_4^{(l)} = \frac{1}{n_l^2} \sum_{j,k=1}^{n_l} 
+        \mathbb{E}[z_j^{(l)}z_j^{(l)}z_k^{(l)}z_k^{(l)}].
+\end{equation}
+从$l$层到$l+1$层的$4$阶correlator可以进行如下推导:
+\begin{equation}
+    \begin{aligned}
+        & \mathbb{E}[z_{i_1}^{(l+1)}z_{i_2}^{(l+1)}z_{i_3}^{(l+1)}z_{i_4}^{(l+1)}] \\
+        =& \sum_{j_i,j_2,j_3,j_4=1}^{n_l} 
+            \mathbb{E}[W_{i_1j_1}^{(l+1)}W_{i_2j_2}^{(l+1)} W_{i_3j_3}^{(l+1)}W_{i_4j_4}^{(l+1)}] 
+            \mathbb{E}[z_{j_1}^{(l)}z_{j_2}^{(l)} z_{j_3}^{(l)}z_{j_4}^{(l)}] \\
+        =& \frac{C_W^2}{n_l^2} \sum_{j_i,j_2,j_3,j_4=1}^{n_l} 
+            [(\delta_{i_1i_2}\delta_{j_1j_2}\delta_{i_3i_4}\delta_{j_3j_4}
+            +\delta_{i_1i_3}\delta_{j_1j_3}\delta_{i_2i_4}\delta_{j_2j_4}
+            +\delta_{i_1i_4}\delta_{j_1j_4}\delta_{i_2i_3}\delta_{j_2j_3})] \\
+        & \times \mathbb{E}[z_{j_1}^{(l)}z_{j_2}^{(l)}z_{j_3}^{(l)}z_{j_4}^{(l)}] \\
+        = & C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_l^2} 
+            \sum_{j,k=1}^{n_l}\mathbb{E}[z_j^{(l)}z_j^{(l)}z_k^{(l)}z_k^{(l)}] \\
+        = & C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) G_4^{(l)},
+    \end{aligned}
+    \label{eq:4point-recur}
+\end{equation}
+由此可得,
+\begin{equation}
+    \begin{aligned}
+    G_4^{(l+1)} = & \frac{1}{n_{l+1}^2} \sum_{i,j=1}^{n_{l+1}}
+        \mathbb{E}[z_i^{(l+1)}z_i^{(l+1)}z_j^{(l+1)}z_j^{(l+1)}] \\
+        = & \frac{1}{n_{l+1}^2} C_W^2 \sum_{i,j=1}^{n_{l+1}}
+            (\delta_{ii}\delta_{jj} + \delta_{ij}\delta_{ij} + \delta_{ij}\delta_{ji}) G_4^{(l)} 
+        = C_W^2 (1 + \frac{2}{n_{l+1}}) G_4^{(l)}.
+    \end{aligned}
+\end{equation}
+根据公式\ref{eq:4point-recur}, 从$0$到$1$层的推导类似:
+\begin{equation*}
+    \begin{aligned}
+     \mathbb{E}[z_{i_1}^{(1)}z_{i_2}^{(1)}z_{i_3}^{(1)}z_{i_4}^{(1)}]
+    =& C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_0^2} 
+            \sum_{j,k=1}^{n_0} \mathbb{E}[x_jx_jx_kx_k] \\
+    =& C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_0^2} 
+            \sum_{j=1}^{n_0} \mathbb{E}[x_jx_j] \sum_{k=1}^{n_0} \mathbb{E}[x_k x_k] \\
+    =&  C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) (G_2^{(0)})^2
+    \end{aligned}
+\end{equation*}
+这里用到了同一条数据不同维度$x_j$和$x_k$互不相关的假定。同样地，可以得到第一层$4$-point correlator为:
+\begin{equation}
+    G_4^{(1)} = C_W^2 (1+ \frac{2}{n_1}) (G_2^{(0)})^2
+    \label{eq:4point-0}
+\end{equation}
+综合公式\ref{eq:4point-0}和公式\ref{eq:4point-recur}, 可以得到:
+\begin{equation}
+    G_4^{(l)} = C_W^{2l}[\prod_{l'=1}^l(1+\frac{2}{n_{l'}})](G_2^{(0)})^2
+        = \prod_{l'=1}^l(1+\frac{2}{n_{l'}})(G_2^{(l)})^2
+\end{equation}
+第二个等号用到了公式\ref{eq:recursion}的结果。
+
+\xu{TODO: 补充analysis.}
