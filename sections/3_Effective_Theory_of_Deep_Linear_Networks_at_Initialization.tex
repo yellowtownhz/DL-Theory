@@ -1,6 +1,7 @@
 这一章主要从线性神经网络进行推导，相当于是激活函数为线性函数的MLP网络。
 
 \subsection{Deep Linear Networks}
+\label{sec:3-1}
 
 线性神经网络中，$l+1$层第$i$个原子与$l$层原子的迭代关系如下:
 \begin{equation}
@@ -39,6 +40,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
 这里用到了层与层之间参数相互独立的假设。接下来就是要研究$z^{(l)}$的协方差分布的问题。
 
 \subsection{Criticality [物理学临界状态]}
+\label{sec:3-2}
 
 \subsubsection{数学推导}
 这一节首先研究一下两个原子之间的协方差$\mathbb{E}[z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}]$，
@@ -104,6 +106,7 @@ $G_{\alpha_1\alpha_2}^{(l)} = G_{\alpha_1\alpha_2}^{(0)} \equiv G_{\alpha_1\alph
 协方差保持一致的意义在于，输入数据的结构信息(structure)在网络传递的过程中得到了保留。
 
 \subsection{Fluctuations [物理学中的扰动]}
+\label{sec:3-3}
 \subsubsection{数学推导}
 上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系($4$-point correlator)，
 基本思路是拆分为$2$个原子之间协方差的组合。

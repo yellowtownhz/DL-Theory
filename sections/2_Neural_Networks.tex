@@ -54,6 +54,7 @@ MLP的计算过程为：
 \begin{equation}
     \sigma(z)=log(1+e^z)
 \end{equation}
+\zhen{Hinton在RBM机里推导softplus，其实是先有softplus，为了简便计算才有的ReLU}
 
 第八种SWISH函数是sigmoid函数乘上了一个$z$，在$z>0$的时候就像$\sigma(z)\approx z$，在$z<0$的时候就像$\sigma(z)\approx 0$，并且，乘零的操作保证了$\sigma(0)=0$
 \begin{equation}
