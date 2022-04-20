@@ -13,5 +13,6 @@
 .DS_Store
 main.pdf
 __latexindent_temp.tex
+__latexindent_temp.pdf
 sections/__latexindent_temp.tex
 .vscode

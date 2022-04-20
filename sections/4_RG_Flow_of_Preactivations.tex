@@ -1,0 +1,817 @@
+\subsection{First Layer: Good-Old Gaussian}
+先给出一些基本的notations. 数据集 ($N_D$个样本，每个样本$n_0$维)：
+\begin{equation}
+    \mathcal{D} = \{x_{i;\alpha}\}_{i=1,...,n_0;\alpha=1,...,N_D}.
+\end{equation}
+第一层preactivations:
+\begin{equation}
+    z_{i;\alpha}^{(1)} \equiv z_i^{(1)}(x_\alpha) = b_i^{(1)} + 
+        \sum_{j=1}^{n_0}W_{ij}^{(1)}x_{j;\alpha},~ for ~ i = 1,...,n_1.
+    \label{eq:ch4-preact}
+\end{equation}
+$W^{(1)}$和$b^{(1)}$均为零均值高斯分布，方差如下:
+\begin{equation}
+    \mathbb{E}\left[b_i^{(1)}b_j^{(1)}\right] = \delta_{ij}C_b^{(1)},
+    \label{eq:ch4_var_b}
+\end{equation}
+\begin{equation}
+    \mathbb{E}\left[W_{i_1j_1}^{(1)}W_{i_2j_2}^{(1)}\right] = 
+        \delta_{i_1i_2}\delta_{j_1j_2}\frac{C_W^{(1)}}{n_0}.
+    \label{eq:ch4_var_w}
+\end{equation}
+关注的分布可以表示为：
+\begin{equation}
+    p(z^{(1)}|\mathcal{D}) = p(z^{(1)}(x_1),...,z^{(1)}(x_{N_D})).
+\end{equation}
+
+\subsubsection{Combinatorial derivation via correlators}
+对于one-point correlator，根据preactivations定义 Eq. \ref{eq:ch4-preact},
+\begin{equation}
+    \mathbb{E}\left[z_{i;\alpha}^{(1)}\right] = 
+        \mathbb{E}\left[b_i^{(1)} + \sum_{j=1}^{n_0}W_{ij}^{(1)}x_{j;\alpha_1}\right]
+        = 0,
+\end{equation}
+这里用到了$\mathbb{E}\left[b_i^{(1)}\right] =0$ 和 $\mathbb{E}\left[W_{ij}^{(1)}\right] =0$.
+同理，所有奇数个point的correlators，由于在进行Wick contraction组成两两pair对以后，总会剩余一个单独的$b_i$
+或者单独的$W_{ij}$，所以都会为$0$.
+
+接下来计算two-point correlator,
+\begin{equation}
+    \begin{aligned}
+        \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}\right]
+        =& \mathbb{E}\left[\left(b_{i_1}^{(1)} + 
+        \sum_{j_1=1}^{n_0}W_{i_1j_1}^{(1)}x_{j_1;\alpha_1} \right)
+        \left(b_{i_2}^{(1)} + \sum_{j_2=1}^{n_0}W_{i_2j_2}^{(1)}x_{j_2;\alpha_2} \right)\right] \\
+        =& \delta_{i_1i_2}\left(C_b^{(1)} + C_W^{(1)}\frac{1}{n_0}
+            \sum_{j=1}^{n_0} x_{j;\alpha_1}x_{j;\alpha_2}\right) 
+        = \delta_{i_1i_2} G_{\alpha_1\alpha_2}^{(1)},
+    \end{aligned}
+    \label{eq:ch4_2point_corr}
+\end{equation}
+这里先把第一行的括号展开，会有$4$项，其中两项为括号里面第一项和第一项组合，第二项和
+第二项组合，也就是
+\begin{equation*}
+    \mathbb{E} \left(b_{i_1}^{(1)} b_{i_2}^{(1)} \right) + 
+    \mathbb{E} \left[\left(\sum_{j_1=1}^{n_0}W_{i_1j_1}^{(1)}x_{j_1;\alpha_1}\right)
+    \left(\sum_{j_2=1}^{n_0}W_{i_2j_2}^{(1)}x_{j_2;\alpha_2} \right)\right]
+\end{equation*}
+为非$0$，其他两项都会存在$b$和$W$为奇数个的情况，均为$0$. 第二项只有$j_1 = j_2$才为非$0$，进一步化简为
+\begin{equation*}
+    \mathbb{E} \left(b_{i_1}^{(1)} b_{i_2}^{(1)} \right) + 
+    \mathbb{E} \left( \sum_{j=1}^{n_0}W_{i_1j}^{(1)}
+        W_{i_2j}^{(1)}x_{j;\alpha_1}x_{j;\alpha_2} \right)
+\end{equation*}
+代入Eq. \ref{eq:ch4_var_b}和Eq. \ref{eq:ch4_var_w}即可得到Eq. \ref{eq:ch4_2point_corr}中最后一行的结果。
+这里引入了first-layer metric (\xu{TODO: metric 的物理含义是啥？@树贤})
+\begin{equation}
+    G_{\alpha_1\alpha_2}^{(1)} = C_b^{(1)} + C_W^{(1)}\frac{1}{n_0}
+            \sum_{j=1}^{n_0} x_{j;\alpha_1}x_{j;\alpha_2}.
+    \label{eq:ch4_layer1_metric}
+\end{equation}
+该定义为两个不同样本之间的two-point correlation of preactivations.
+同理，four-point correlator 可以类似地代入Eq. \ref{eq:ch4-preact}对$W$和$b$
+使用Wick-contracting，得到:
+\begin{equation}
+    \begin{aligned}
+       & \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}
+        z_{i_3;\alpha_3}^{(1)}z_{i_4;\alpha_4}^{(1)}\right] \\
+       =& \delta_{i_1i_2}\delta_{i_3i_4}G_{\alpha_1\alpha_2}^{(1)}G_{\alpha_3\alpha_4}^{(1)}
+       + \delta_{i_1i_3}\delta_{i_2i_4}G_{\alpha_1\alpha_3}^{(1)}G_{\alpha_2\alpha_4}^{(1)}
+       + \delta_{i_1i_4}\delta_{i_2i_3}G_{\alpha_1\alpha_4}^{(1)}G_{\alpha_2\alpha_3}^{(1)} \\
+       =& \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}\right]
+          \mathbb{E}\left[z_{i_3;\alpha_3}^{(1)}z_{i_4;\alpha_4}^{(1)}\right]
+       + \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_3;\alpha_3}^{(1)}\right]
+          \mathbb{E}\left[z_{i_2;\alpha_2}^{(1)}z_{i_4;\alpha_4}^{(1)}\right] \\
+       & + \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_4;\alpha_4}^{(1)}\right]
+          \mathbb{E}\left[z_{i_2;\alpha_2}^{(1)}z_{i_3;\alpha_3}^{(1)}\right]
+    \end{aligned}
+\end{equation}
+最后一行表达式等价于对$4$元组方差进行Wick-contracting展开. 根据第一章中对connected four-point correlator
+的定义可得:
+\begin{equation}
+    \mathbb{E}\left[z_{i_1;\alpha_1}^{(1)}z_{i_2;\alpha_2}^{(1)}
+    z_{i_3;\alpha_3}^{(1)}z_{i_4;\alpha_4}^{(1)}\right] \Big|_{connected} = 0.
+\end{equation}
+同理，其他高阶的connected correlators也可以通过类似Eq. \ref{eq:ch4-preact}展开得到，并且都为$0$. 
+这也就是说所有的correlators都来自于一个零均值方差为Eq. \ref{eq:ch4-preact}的高斯分布.
+
+为了得到第一层的action，需要求解该variance的逆，由满足下式的$\delta_{i_1i_2}G^{\alpha_1\alpha_2}_{(1)}$给出：
+\begin{equation}
+    \sum_{j=1}^{n_1} \sum_{\beta\in D} \left(\delta_{i_1j}G_{(1)}^{\alpha_1\beta}\right)
+    \left(\delta_{ji_2}G^{(1)}_{\beta\alpha_2}\right) = \delta_{i_1i_2}\delta_{\alpha_1}^{\alpha_2},
+\end{equation}
+由第一章中的定义，$G_{(1)}^{\alpha_1\beta}$为$G^{(1)}_{\alpha_1\beta}$的逆，满足：
+\begin{equation}
+    \sum_{\beta\in D}G_{(1)}^{\alpha_1\beta}G^{(1)}_{\alpha_1\beta}=\delta^{\alpha_1}_{\alpha_2}.
+\end{equation}
+有了上述的逆, 第一层preactivations的高斯分布可以被表达为：
+\begin{equation}
+    p\left(z^{(1)}\bigg| D\right) = \frac{1}{Z}e^{-S(z^{(1)})},
+    \label{eq:ch4_z1_p}
+\end{equation}
+这里二次的action $S$为:
+\begin{equation}
+    S(z^{(1)}) = \frac{1}{2}\sum_{i=1}^{n_1}\sum_{\alpha_1,\alpha_2\in D} 
+        G_{(1)}^{\alpha_1\beta}z_{i;\alpha_1}^{(1)}z_{i;\alpha_2}^{(1)},
+\end{equation}
+partition function $Z$为:
+\begin{equation}
+    Z = \int \left[\prod_{i,\alpha} dz_{i;\alpha}^{(1)}\right]e^{-S(z^{(1)})}
+        = \big|2\pi G^{(1)}\big|^{\frac{n_1}{2}}.
+\end{equation}
+这里$\big|2\pi G^{(1)}\big|$是$N_D$-by-$N_D$矩阵$2\pi G_{\alpha_1\alpha_2}^{(1)}$
+的行列式。 \emph{$S$, $Z$ 等的计算均在第一章中有详细推导和定义。}
+
+\subsection{Second Layer: Genesis of Non-Gaussianity}
+考虑MLP的第二层preactivations的分布情况，
+\begin{equation}
+    z_{i;\alpha}^{(2)} \equiv z_{i}^{(2)}(x_\alpha) = b_i^{(2)} + \sum_{j=1}^{n_1}
+        W_{ij}^{(2)}\sigma_{j;\alpha}^{(1)},~~ for ~~ i=1,...,n_2,
+\end{equation}
+其中第一层的激活值为：
+\begin{equation}
+    \sigma_{i;\alpha}^{(1)} \equiv \sigma(z_{i;\alpha}^{(1)}),
+\end{equation}
+并且$b^{(2)}$和$W^{(2)}$ 均服从高斯分布的采样。
+
+一二两层preactivations的联合分布可以被分解为:
+\begin{equation}
+    p\left(z^{(2)},z^{(1)} \bigg| \mathcal{D} \right) = p\left(z^{(2)} \bigg| z^{(1)}\right)
+        p\left(z^{(1)} \bigg| \mathcal{D} \right).
+\end{equation}
+$p\left(z^{(1)} \bigg| \mathcal{D} \right)$在上一节中已经解决，是一个标准的高斯分布，方差由first-layer
+metric $G_{\alpha_1\alpha_2}^{(1)}$决定。第一项条件分布可以被拆解为：
+\begin{equation}
+    \begin{aligned}
+    & p\left(z^{(2)} \bigg| z^{(1)}\right) \\
+    =& \int \left[\prod_i db_i^{(2)}p(b_i^{(2)})\right]\left[\prod_{i,j}dW_{ij}^{(2)}
+        p\left(W_{ij}^{(2)}\right)\right]\prod_{i,\alpha}\delta\left(z_{i;\alpha}^{(2)}
+        -b_i^{(2)} - \sum_j W_{ij}^{(2)}\sigma_{j;\alpha}^{(1)}\right),
+    \end{aligned}
+\end{equation}
+这里的$\delta$为指示函数，$\delta_{\mu v} = 1$ if $\mu = v$, else $0$. \xu{NOTE: 这个公式
+需要补充一些解释}.
+
+$z^{(2)}$的边缘分布可以直接通过$z^{(2)},z^{(1)}$联合分布对$z^{(1)}$进行积分得到：
+\begin{equation}
+    p\left(z^{(2)} \bigg| \mathcal{D} \right) = \int \left[\prod_{i,\alpha}
+        dz_{i;\alpha}^{(1)}\right]p\left(z^{(2)}\big| z^{(1)}\right)
+        p\left(z^{(1)}\big| \mathcal{D}\right).
+\end{equation}
+接下来先解决条件分布，然后解决积分的问题。
+
+\subsubsection{Second-layer conditional distribution}
+条件概率的计算方法与4.1中完全相同，只需要把Eq. \ref{eq:ch4_z1_p}中相关度量从$x$换成$\sigma^{(1)}$:
+\begin{equation}
+    p\left(z^{(2)}\big| z^{(1)}\right) = \frac{1}{\sqrt{\big|2\pi \hat{G}^{(2)}\big|^{n_2}}}
+    exp\left(-\frac{1}{2}\sum_{i=1}^{n_2}\sum_{\alpha_1\alpha_2\in\mathcal{D}}
+    \hat{G}^{\alpha_1,\alpha_2}_{(2)}z_{i;\alpha_1}^{(2)}z_{i;\alpha_2}^{(2)}\right),
+    \label{eq:ch4_z2_cond_p}
+\end{equation}
+这里引入\emph{stochastic} second-layer metric
+\begin{equation}
+    \hat{G}^{\alpha_1,\alpha_2}_{(2)} \equiv C_b^{(2)} + C_W^{(2)}\frac{1}{n_1}
+    \sum_{j=1}^{n_1}\sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_2}^{(1)},
+    \label{eq:ch4_2layer_metric}
+\end{equation}
+相比于4.1中，$G$有hat是因为$G$有随机性，通过$\sigma^{(1)}\equiv \sigma(z^{(1)})$依赖于
+stochastic 变量$z^{(1)}$。\emph{因此第二层条件分布也是一个variance为随机变量的高斯分布}。即the stochastic
+second-layer metric fluctuates around the \emph{mean} second-layer metric
+\begin{equation}
+    \begin{aligned}
+    G_{\alpha_1\alpha_2}^{(2)} \equiv \mathbb{E}\left[\hat{G}^{\alpha_1,\alpha_2}_{(2)}\right]
+    = & C_b^{(2)} + C_W^{(2)}\frac{1}{n_1}\sum_{j=1}^{n_1}\mathbb{E}\left[\sigma_{j;\alpha_1}^{(1)}
+    \sigma_{j;\alpha_2}^{(1)}\right] \\
+    = & C_b^{(2)} + C_W^{(2)}\langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{G^{(1)}},
+    \end{aligned}
+    \label{eq:ch4_2fluc}
+\end{equation}
+\xu{TODO: 第二行的推导公式涉及到高斯积分的计算比较难敲，暂时先这么用着，回头再补。}
+
+基于此，定义fluctuation of the second-layer metric 为:
+\begin{equation}
+    \hat{\Delta G}_{\alpha_1\alpha_2}^{(2)} \equiv \hat{G}^{\alpha_1,\alpha_2}_{(2)} -
+    G_{\alpha_1\alpha_2}^{(2)} = C_W^{(2)}\frac{1}{n_1} \sum_{j=1}^{n_1}
+    \left(\sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_1}^{(1)} - 
+    \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{G^{(1)}}\right),
+    \label{eq:ch4_fluc_metric_layer2}
+\end{equation}
+显然该fluctuation期望为$0$.
+\begin{equation}
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(2)}\right] = 0.
+\end{equation}
+上式为同一个原子的两个不同activations的variance，接下来研究两个不同原子的4阶activations的情况
+\begin{equation}
+    \begin{aligned}
+    & \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(2)} 
+    \hat{\Delta G}_{\alpha_3\alpha_4}^{(2)}\right] \\
+    =& \left(\frac{C_W^{(2)}}{n_1}\right)^2\sum_{j,k=1}^{n_1}\mathbb{E}\left[\left(
+    \sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_2}^{(1)} - \mathbb{E}\left[
+    \sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_2}^{(1)} \right]\right)
+    \left(\sigma_{k;\alpha_1}^{(1)}\sigma_{k;\alpha_2}^{(1)} - \mathbb{E}\left[
+    \sigma_{k;\alpha_1}^{(1)}\sigma_{k;\alpha_2}^{(1)} \right]\right)\right] \\
+    =& \left(\frac{C_W^{(2)}}{n_1}\right)^2\sum_{j}^{n_1}\left\{\mathbb{E}\left[
+    \sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_2}^{(1)}
+    \sigma_{j;\alpha_3}^{(1)}\sigma_{j;\alpha_4}^{(1)}\right] - 
+    \mathbb{E}\left[ \sigma_{j;\alpha_1}^{(1)}\sigma_{j;\alpha_2}^{(1)}\right]
+    \mathbb{E}\left[ \sigma_{j;\alpha_3}^{(1)}\sigma_{j;\alpha_4}^{(1)}\right] \right\} \\
+    =& \frac{1}{n_1}\left(C_W^{(2)}\right)^2\left[\langle\sigma_{\alpha_1}\sigma_{\alpha_2} 
+    \sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{G^{(1)}} - \langle\sigma_{\alpha_1}
+    \sigma_{\alpha_2}\rangle_{G^{(1)}}
+    \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{G^{(1)}}\right] \\
+    \equiv & \frac{1}{n_1} V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(2)},
+    \end{aligned}
+    \label{eq:ch4_4point_vertex}
+\end{equation}
+这里用到了Eq. \ref{eq:ch4_2fluc}中的形式化定义，同时直接把第二行的括号展开合并即可得到第三行的结果。引入了
+four-point vertex 的定义$V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(2)}=V\left(x_{\alpha_1},x_{\alpha_2};
+x_{\alpha_3},x_{\alpha_4}\right)$,依赖于$4$个输入数据并且是关于下标对称 $\alpha_1 \leftrightarrow \alpha_2$, 
+$\alpha_3 \leftrightarrow \alpha_4$ 并且 $(\alpha_1, \alpha_2) \leftrightarrow (\alpha_3, \alpha_4)$.
+\xu{TODO: Vertex是啥意思？有啥物理含义？@树贤}. 
+
+可以看出该metric fluctuation是关于$\frac{1}{n_1}$的一阶项，如果在网络足够宽的情况下 ($n_1 \gg 1$)，条件分布
+$(z^{(2)}\big| z^{(1)})$依然是一个确定的标准高斯分布。
+
+\subsubsection{Wick: derivation for distributions of preactivations}
+条件概率分布在上一节中已经解决，接下来先搞定$2$阶correlator和$4$阶correlator，然后就可以得到第$2$层preactivations
+的分布情况了。
+
+应用上一节的推导+Wick定理，可以得到second-layer preactivations的2-point correlator:
+\begin{equation}
+    \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_2;\alpha_2}^{(2)}\right]
+    = \delta_{i_1i_2}\mathbb{E}\left[\hat{G}_{\alpha_1\alpha_2}^{(2)}\right]
+    = \delta_{i_1i_2}G_{\alpha_1\alpha_2}^{(2)}
+    = \delta_{i_1i_2}\left(C_b^{(2)} + C_W^{(2)}\langle\delta_{\alpha_1}\delta_{\alpha_2}
+    \rangle_{G^{(1)}}\right),
+\end{equation}
+这里用到了类似Eq. \ref{eq:ch4_2point_corr}的推导过程以及Eq. \ref{eq:ch4_2layer_metric}中的定义。
+
+同样地，full four-point correlator也可以如下计算：
+\begin{equation}
+    \begin{aligned}
+    & \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_2;\alpha_2}^{(2)}
+    z_{i_3;\alpha_3}^{(2)}z_{i_4;\alpha_4}^{(2)}\right] \\
+    =& \delta_{i_1i_2}\delta_{i_3i_4}\mathbb{E}\left[\hat{G}_{\alpha_1\alpha_2}^{(2)}
+    \hat{G}_{\alpha_3\alpha_4}^{(2)}\right] + 
+    \delta_{i_1i_3}\delta_{i_2i_4}\mathbb{E}\left[\hat{G}_{\alpha_1\alpha_3}^{(2)}
+    \hat{G}_{\alpha_2\alpha_4}^{(2)}\right] +
+    \delta_{i_1i_4}\delta_{i_2i_3}\mathbb{E}\left[\hat{G}_{\alpha_1\alpha_4}^{(2)}
+    \hat{G}_{\alpha_2\alpha_3}^{(2)}\right]\\
+    =& \delta_{i_1i_2}\delta_{i_3i_4}G_{\alpha_1\alpha_2}^{(2)}G_{\alpha_3\alpha_4}^{(2)}+
+    \delta_{i_1i_3}\delta_{i_2i_4}G_{\alpha_1\alpha_3}^{(2)}G_{\alpha_2\alpha_4}^{(2)}+
+    \delta_{i_1i_4}\delta_{i_2i_3}G_{\alpha_1\alpha_4}^{(2)}G_{\alpha_2\alpha_3}^{(2)} \\
+    &+ \frac{1}{n_1}\left[\delta_{i_1i_2}\delta_{i_3i_4}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(2)}
+     +\delta_{i_1i_3}\delta_{i_2i_4}V_{(\alpha_1\alpha_3)(\alpha_2\alpha_4)}^{(2)}
+     +\delta_{i_1i_4}\delta_{i_2i_3}V_{(\alpha_1\alpha_4)(\alpha_2\alpha_3)}^{(2)}\right].
+    \end{aligned}
+\end{equation}
+第一行到第二行直接wick 定理展开然后用Eq. \ref{eq:ch4_2point_corr}定义即可，
+第二行到第三行用到了如下推导(利用Eq. \ref{eq:ch4_fluc_metric_layer2}到Eq. \ref{eq:ch4_4point_vertex} 
+三个公式):
+\begin{equation*}
+    \begin{aligned}
+    & \mathbb{E}\left[\hat{G}_{\alpha_1\alpha_2}^{(2)}\hat{G}_{\alpha_3\alpha_4}^{(2)}\right]=
+    \mathbb{E}\left[\left(G_{\alpha_1\alpha_2}^{(2)} + \hat{\Delta G}_{\alpha_1\alpha_2}^{(2)} 
+    \right)
+    \left(G_{\alpha_3\alpha_4}^{(2)} + \hat{\Delta G}_{\alpha_3\alpha_4}^{(2)} \right)\right] \\
+    =& G_{\alpha_1\alpha_2}^{(2)}G_{\alpha_3\alpha_4}^{(2)} +
+    G_{\alpha_1\alpha_2}^{(2)}\mathbb{E}\left[\hat{\Delta G}_{\alpha_3\alpha_4}^{(2)}\right] +
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(2)}\right]G_{\alpha_3\alpha_4}^{(2)} +
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(2)}\hat{\Delta G}_{\alpha_3\alpha_4}^{(2)}
+    \right] \\
+    =& G_{\alpha_1\alpha_2}^{(2)}G_{\alpha_3\alpha_4}^{(2)} + 
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(2)}\hat{\Delta G}_{\alpha_3\alpha_4}^{(2)} 
+    \right] = G_{\alpha_1\alpha_2}^{(2)}G_{\alpha_3\alpha_4}^{(2)} + \frac{1}{n_1}
+    V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(2)}.
+    \end{aligned}
+\end{equation*}
+接下来，根据定义，connected four-point correlators of the second-layer preactivations is
+(代入上述求得的$2\&4$-point correlators):
+\begin{equation}
+    \begin{aligned}
+    & \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_2;\alpha_2}^{(2)}
+    z_{i_3;\alpha_3}^{(2)}z_{i_4;\alpha_4}^{(2)}\right]\bigg|_{connected} 
+    = \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_2;\alpha_2}^{(2)}
+    z_{i_3;\alpha_3}^{(2)}z_{i_4;\alpha_4}^{(2)}\right] - \\
+    & \left(
+        \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_2;\alpha_2}^{(2)}\right]
+        \mathbb{E}\left[z_{i_3;\alpha_3}^{(2)}z_{i_4;\alpha_4}^{(2)}\right] +
+        \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_3;\alpha_3}^{(2)}\right]
+        \mathbb{E}\left[z_{i_2;\alpha_2}^{(2)}z_{i_4;\alpha_4}^{(2)}\right] +
+        \mathbb{E}\left[z_{i_1;\alpha_1}^{(2)}z_{i_4;\alpha_4}^{(2)}\right]
+        \mathbb{E}\left[z_{i_2;\alpha_2}^{(2)}z_{i_3;\alpha_3}^{(2)}\right]
+    \right) \\
+    =& \frac{1}{n_1}\left[\delta_{i_1i_2}\delta_{i_3i_4}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(2)}
+     +\delta_{i_1i_3}\delta_{i_2i_4}V_{(\alpha_1\alpha_3)(\alpha_2\alpha_4)}^{(2)}
+     +\delta_{i_1i_4}\delta_{i_2i_3}V_{(\alpha_1\alpha_4)(\alpha_2\alpha_3)}^{(2)}\right].
+    \end{aligned}
+\end{equation}
+connected 4-point correlators衡量了分布偏离标准高斯分布的程度，因此可以说明\emph{第二层preactivations的分布
+$p\left(z^{(2)}\bigg| \mathcal{D}\right)$通常来说是\textbf{non-Gaussian}并且其偏离高斯分布的程度正比于
+$\frac{1}{n_1}$和$V_{(\alpha_1\alpha_4)(\alpha_2\alpha_3)}^{(2)}$。也就是说，网络越宽，实际上越接近于高斯分布。}
+
+为了找到对应于上述non-Gaussian$2\&4$-point correlators的action，根据第一章1.2的方法，需要including a quartic 
+term in the action. 
+
+\xu{NOTE: 这里各种配coupling项的骚操作，在第一章中有相应理论，
+先写个结论，感觉概率的形式没那么重要，暂时先不纠结详细推导了。}
+\begin{equation}
+    \begin{aligned}
+    S[z] &= \frac{1}{2} \sum_{\alpha_1\alpha_2\in\mathcal{D}}g^{\alpha_1\alpha_2}
+    \sum_{i=1}^n z_{i;\alpha_1}z_{i;\alpha_2} \\
+    &- \frac{1}{8}\sum_{\alpha_1,...,\alpha_4\in\mathcal{D}}v^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}
+    \sum_{i_1,i_2=1}^n z_{i_1;\alpha_1}z_{i_2;\alpha_2}z_{i_3;\alpha_3}z_{i_4;\alpha_4}.
+    \end{aligned}
+\end{equation}
+这里的coupling $v^{(2)}_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}$与four-point vertex 
+$V^{(2)}_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}$有相同的对称结构并且是对应上的。$g$是跟
+$G_{\alpha_1\alpha_2}^{(2)}$对应上的。具体为：
+\begin{equation}
+    g^{\alpha_1\alpha_2} = G_{(2)}^{\alpha_1\alpha_2} + O(\frac{1}{n_1}),
+\end{equation}
+\begin{equation}
+    v^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} =
+    \frac{1}{n_1}V_{(2)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} + O(\frac{1}{n_1^2}).
+\end{equation}
+这里上下标颠倒表示为对应矩阵的逆的意思:
+\begin{equation}
+    V_{(2)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} \equiv \sum_{\beta_1,...,\beta_4}
+    G_{(2)}^{\alpha_1\beta_1}G_{(2)}^{\alpha_2\beta_2}G_{(2)}^{\alpha_3\beta_3}
+    G_{(2)}^{\alpha_4\beta_4}V_{(\beta_1\beta_2)(\beta_3\beta_4)}^{(2)}.
+\end{equation}
+这里inverse metric $G_{(2)}^{\alpha_1\alpha_2}$和quartic coupling 
+$V_{(2)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}$是input-dependent. 特别地，the effective
+strength of interaction (connected 4-point correlator)
+between neurons is set by the particular set of inputs to the network. 
+\emph{根据公式 Eq. \ref{eq:ch4_2fluc} 以及公式 Eq. \ref{eq:ch4_layer1_metric}，可以定性地看出，
+$G^{(2)}$和$V^{(2)}$都是与$G^{(1)}$和$1/n_1$正相关，而$G^{(1)}$又是与
+$\frac{1}{n_0}\sum_{j=1}^{n_0}x_{j;\alpha_1}x_{j;\alpha_2}$正相关，这就说明，网络
+宽度越窄，输入样本之间耦合越强，第二层原子之间的interaction越强。}
+
+\subsection{Deeper Layers: Accumulation of Non-Gaussianity}
+拓展到更深层直接按照上一节的公式改成$l$到$l+1$进行迭代即可，相应迭代公式陆续列在如下。
+
+preactivations：
+\begin{equation}
+    z_{i;\alpha}^{(l+1)} = b_i^{(l+1)} + \sum_{j=1}^{n_l}W_{ij}^{(l+1)}\sigma_{j;\alpha}^{(l)},
+    ~~for ~~ i=1,...,n_{l+1}.
+\end{equation}
+activations：
+\begin{equation}
+    \sigma_{i;\alpha}^{(l)} \equiv \sigma(z_{i;\alpha}^{(l)}).
+\end{equation}
+Follow上一节，推导$p\left(z^{(L)}\big| \mathcal{D}\right)$主要有三步：recursion, action,
+$1/n$-expansion.
+
+\subsubsection{Recursion}
+联合分布：
+\begin{equation}
+    p\left(z^{(l+1)}, z^{(l)}\big| \mathcal{D}\right) = 
+    p\left(z^{(l+1)}\big| z^{(l)}\right)p\left(z^{(l)}\big| \mathcal{D}\right)
+\end{equation}
+Marginalization over $z^{(l)}$得到$z^{(l+1)}$分布：
+\begin{equation}
+    p\left(z^{(l+1)}\big| \mathcal{D}\right) = \int \left[\prod_{i,\alpha}dz_{i;\alpha}^{(l)}
+    \right]p\left(z^{(l+1)}\big| z^{(l)}\right)p\left(z^{(l)}\big| \mathcal{D}\right).
+\end{equation}
+$p\left(z^{(l+1)}\big| z^{(l)}\right)$ serves as a \textbf{transition matrix}, bridging 
+preactivation distributions in adjacent layers.
+
+Follow 上一节的推导公式，条件概率只需要把$z^{(1)}$换成$z^{(l+1)}$, $x_{j;\alpha}$换成
+$\sigma_{j;\alpha}^{(l)}$:
+\begin{equation}
+    p\left(z^{(l+1)}\big| z^{(l)}\right) = \frac{1}{\sqrt{\big|2\pi \hat{G}^{(l+1)}\big|^{n_{l+1}}}}
+    exp\left(-\frac{1}{2}\sum_{i=1}^{n_{l+1}}\sum_{\alpha_1,\alpha_2\in\mathcal{D}}
+    \hat{G}_{(l+1)}^{\alpha_1\alpha_2}z_{i;\alpha_1}^{(l+1)}z_{i;\alpha_2}^{(l+1)}\right),
+\end{equation}
+($l+1$)-th-layer stochastic metric:
+\begin{equation}
+   \hat{G}_{\alpha_1\alpha_2}^{(l+1)} \equiv C_b^{(l+1)} + C_W^{(l+1)} \frac{1}{n_l}
+   \sum_{j=1}^{n_l}\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)},
+\end{equation}
+所有基数阶的correlators都为$0$, 偶数阶的correlators通过Wick's contractions得到,
+\begin{equation}
+    \mathbb{E}\left[z_{i_1;\alpha_1}^{(l+1)}\cdots z_{i_{2m};\alpha_{2m}}^{(l+1)}\right]
+    = \sum_{all~pairings} \delta_{i_{k_1}i_{k_2}}\cdots\delta_{i_{k_{2m-1}}i_{k_{2m}}}
+    \mathbb{E}\left[\hat{G}_{\alpha_{k_1}\alpha_{k_2}}^{(l+1)}\cdots
+    \hat{G}_{\alpha_{k_{2m-1}}\alpha_{k_{2m}}} \right].
+\end{equation}
+求和总共有$(2m-1)!!$组不同pair组合($k_1,...,k_{2m}$)构成的项.
+
+The mean of the stochastic metric,
+\begin{equation}
+    G_{\alpha_1\alpha_2}^{(l+1)} \equiv \mathbb{E}\left[\hat{G}_{\alpha_1\alpha_2}^{(l+1)}
+    \right] = C_b^{(l+1)} + C_W^{(l+1)}\frac{1}{n_l}\sum_{j=1}^{n_l}\mathbb{E}\left[
+        \sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)} \right].
+\end{equation}
+由此可以得到$(l+1)$-th layer的two-point correlator
+\begin{equation}
+    \mathbb{E}\left[z_{i_1;\alpha_1}^{(l+1)}z_{i_2;\alpha_2}^{(l+1)}\right]
+    =\delta_{i_1i_2}\mathbb{E}\left[\hat{G}_{\alpha_1\alpha_2}^{(l+1)}\right]
+    =\delta_{i_1i_2}G_{\alpha_1\alpha_2}^{(l+1)}.
+    \label{eq:ch4_2point_corr_layer_lp1}
+\end{equation}
+fluctuation of the mean metric,
+\begin{equation}
+    \hat{\Delta G}_{\alpha_1\alpha_2}^{(l+1)} \equiv \hat{G}_{\alpha_1\alpha_2}^{(l+1)}
+    - G_{\alpha_1\alpha_2}^{(l+1)} = C_W^{(l+1)}\frac{1}{n_l}\sum_{j=1}^{n_l}
+    \left(\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}-\mathbb{E}
+    \left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}\right] \right),
+\end{equation}
+均值为$0$,
+\begin{equation}
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(l+1)}\right] = 0,
+\end{equation}
+幅度为：
+\begin{equation}
+    \frac{1}{n_l}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(l+1)} \equiv
+    \mathbb{E}\left[\hat{\Delta G}_{\alpha_1\alpha_2}^{(l+1)}
+    \hat{\Delta G}_{\alpha_3\alpha_4}^{(l+1)}\right] = \mathbb{E}\left[
+    \hat{G}_{\alpha_1\alpha_2}^{(l+1)}\hat{G}_{\alpha_3\alpha_4}^{(l+1)} \right]
+    -G_{\alpha_1\alpha_2}^{(l+1)}G_{\alpha_3\alpha_4}^{(l+1)}.
+\end{equation}
+connected four-point correlator:
+\begin{equation}
+    \begin{aligned}
+    & \mathbb{E}\left[z_{i_1;\alpha_1}^{(l+1)}z_{i_2;\alpha_2}^{(l+1)}
+        z_{i_3;\alpha_3}^{(l+1)}z_{i_4;\alpha_4}^{(l+1)} \right]_{connected} \\
+    =& \frac{1}{n_l}\left[\delta_{i_1i_2}\delta_{i_3i_4}V_{(\alpha_1\alpha_2)
+    (\alpha_3\alpha_4)}^{(l+1)} + \delta_{i_1i_3}\delta_{i_2i_4}V_{(\alpha_1\alpha_3)
+    (\alpha_2\alpha_4)}^{(l+1)} + \delta_{i_1i_4}\delta_{i_2i_3}V_{(\alpha_1\alpha_4)
+    (\alpha_2\alpha_3)}^{(l+1)} \right].
+    \end{aligned}
+    \label{eq:ch4_conn_4point_corr_layer_l}
+\end{equation}
+接下来就是通过action求解得到$p\left(z^{(l+1)}\big| \mathcal{D}\right)$.
+
+\subsubsection{Action}
+preactivation distribution $p\left(z^{(l)}\big| \mathcal{D}\right)$,
+\begin{equation}
+    p\left(z^{(l)}\big| \mathcal{D}\right) = \frac{e^{-S(z^{(l)})}}{Z(l)},
+\end{equation}
+$l$-th layer partition function 
+\begin{equation}
+    Z(l) \equiv \int \left[\prod_{i,\alpha}dz_{i;\alpha}^{(l)}\right]e^{-S(z^{(l)})},
+\end{equation}
+根据上一节，action表达为：
+\begin{equation}
+    \begin{aligned}
+    S(z^{(l)}) &\equiv \frac{1}{2}\sum_{i=1}^{n_l}\sum_{\alpha_1,\alpha_2\in \mathcal{D}}
+    g_{(l)}^{\alpha_1\alpha_2}z_{i;\alpha_1}^{(l)}z_{i;\alpha_2}^{(l)} \\
+    &- \frac{1}{8}\sum_{i_1,i_2=1}^{n_l}\sum_{\alpha_1,...,\alpha_4\in \mathcal{D}}
+    v_{(l)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}
+    z_{i_3;\alpha_3}^{(l)}z_{i_4;\alpha_4}^{(l)} + ...
+    \end{aligned}
+\end{equation}
+与上一节的推导一样，$2$阶和$4$阶couplings用$2$ 阶和$4$ 阶correlators计算如下，
+\begin{equation}
+    \begin{aligned}
+    g_{(l)}^{(\alpha_1\alpha_2)} = &~ G_{(l)}^{\alpha_1\alpha_2} + O(v,...), \\
+    v_{(l)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} = &~ \frac{1}{n_{l-1}}
+    V_{(l)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} + O(v^2,...), \\
+    V_{(l)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} \equiv & \sum_{\beta_1,...,\beta_4\in 
+    \mathcal{D}} G_{(l)}^{\alpha_1\beta_1}G_{(l)}^{\alpha_2\beta_2}
+    G_{(l)}^{\alpha_3\beta_3}G_{(l)}^{\alpha_4\beta_4}
+    V_{(\beta_1\beta_2)(\beta_3\beta_4)}^{(l)}.
+    \end{aligned}
+    \label{eq:ch4_coupling_layer_l}
+\end{equation}
+上述式子中的高阶项可以被忽略if and only if the quartic coupling 
+$v$ and higher-order couplings are perturbatively small (当网络足够宽的时候).
+
+\subsubsection{Large-width expansion}
+按照之前讨论，各层原子数比较大的时候，高阶项$O(\frac{1}{n_l})$都会比较小，其对分布带来的扰动都可以合理
+忽略，各种计算都可以被适当简化，i.e. this large-but-finite-width regime is where networks 
+become both practically usable and theoretically tractable.
+\begin{equation}
+    n_1,n_2,...,n_{L-1} \sim n \gg 1.
+\end{equation}
+Mean metric由于都是确定量而且与$n$无关，加上前两层的情况，可以设定 $V^{(l)}=O(1)$, $G^{(l)}=O(1)$
+对各层均满足。根据Eq. \ref{eq:ch4_coupling_layer_l} 中correlators和couplings的关系可以得知，在
+$n\gg 1$ setting下，$v_{(l)}=O(1/n)$ is perturbatively small at the $l$-th layer and that 
+the quadratic coupling is given by $g_{(l)}=G_{(l)}+O(1/n)$. In carrying out this inductive 
+proof, we obtain the recursion relations that govern the change in the preactivation 
+distributions from the $l$-th layer to the ($l + 1$)-th layer.
+
+two-point correlator in the ($l+1$)-th layer 可以进一步细化为
+\begin{equation}
+    G_{\alpha_1\alpha_2}^{(l+1)} = C_b^{(l+1)} + C_W^{(l+1)}\frac{1}{n_l}
+    \sum_{j=1}^{n_l}\mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}
+    \right]
+\end{equation}
+插入上述coupling $g_{(l)} = G_{(l)} + O(1/n)$ 以及 $v_{(l)} = O(1/n)$, 得到
+\begin{equation}
+    \begin{aligned}
+    G_{\alpha_1\alpha_2}^{(l+1)} = C_b^{(l+1)} + C_W^{(l+1)}\langle \sigma_{\alpha_1}
+    \sigma_{\alpha_2}\rangle_{G^{(l)}} + O\left(\frac{1}{n}\right),
+    \end{aligned}
+    \label{eq:ch4_2point_corr_layer_l}
+\end{equation}
+\xu{NOTE: 补充细节推导.}
+
+接下来推导four-point correlator, 
+\begin{equation}
+    \begin{aligned}
+        & \frac{1}{n_l}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(l+1)} \\
+        =& \left(\frac{C_W^{(l+1)}}{n_l}\right)^2\sum_{j,k=1}^{n_l}\left\{
+            \mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}
+            \sigma_{k;\alpha_3}^{(l)}\sigma_{k;\alpha_4}^{(l)} \right]
+            -\mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}\right] 
+            \mathbb{E}\left[\sigma_{k;\alpha_1}^{(l)}\sigma_{k;\alpha_2}^{(l)}\right]
+            \right\}
+    \end{aligned}
+    \label{eq:ch4_4point_corr_layer_l}
+\end{equation}
+$j=k$ 的情况下，为同一个原子的correlation，
+\begin{equation}
+    \begin{aligned}
+    &\mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}
+    \sigma_{j;\alpha_3}^{(l)}\sigma_{j;\alpha_4}^{(l)} \right]
+    - \mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}\right] 
+    \mathbb{E}\left[\sigma_{j;\alpha_3}^{(l)}\sigma_{j;\alpha_4}^{(l)}\right] \\
+    =& \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\sigma_{\alpha_3}\sigma_{\alpha_4}
+    \rangle_{G^{(l)}} - \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{G^{(l)}}
+    \langle\sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{G^{(l)}} + 
+    O\left(\frac{1}{n}\right).
+    \end{aligned}
+\end{equation}
+$j\neq k$的情况下，为两个原子之间的correlation，
+\begin{equation}
+    \begin{aligned}
+    &\mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}
+    \sigma_{k;\alpha_3}^{(l)}\sigma_{k;\alpha_4}^{(l)} \right] - 
+    \mathbb{E}\left[\sigma_{j;\alpha_1}^{(l)}\sigma_{j;\alpha_2}^{(l)}\right]
+    \mathbb{E}\left[\sigma_{k;\alpha_1}^{(l)}\sigma_{k;\alpha_2}^{(l)}\right] \\
+    =& \frac{1}{4n_{l-1}}\sum_{\beta_1,...,\beta_4\in \mathcal{D}} 
+    V_{(l)}^{(\beta_1\beta_2)(\beta_3\beta_4)}\langle\sigma_{\alpha_1}\sigma_{\alpha_2}
+    (z_{\beta_1}z_{\beta_2} - g_{\beta_1\beta_2})\rangle_{G^{(l)}}
+    \langle\sigma_{\alpha_3}\sigma_{\alpha_4} (z_{\beta_3}z_{\beta_4} - 
+    g_{\beta_3\beta_4})\rangle_{G^{(l)}} \\
+    & + O\left(\frac{1}{n^2}\right).
+    \end{aligned}
+\end{equation}
+\xu{NOTE: 上面两个公式在之前章节有推导，比较复杂，暂时就先用了，后续有需要再补上...}
+
+把上述两式代入 Eq. \ref{eq:ch4_4point_corr_layer_l} 中对$\sum$进行展开，得到
+\begin{equation}
+    \begin{aligned}
+    & \frac{1}{n_l}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} \\ 
+    =& \frac{1}{n_l}\left(C_W^{(l+1)}\right)^2[\langle\sigma_{\alpha_1}\sigma_{\alpha_2}
+    \sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{G^{(l)}} - 
+    \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{G^{(l)}}
+    \langle\sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{G^{(l)}}] \\
+    & + \frac{1}{n_{l-1}}\frac{\left(C_W^{(l+1)}\right)^2}{4} \sum_{\beta_1,...,
+    \beta_4\in \mathcal{D}} V_{(l)}^{(\beta_1\beta_2)(\beta_3\beta_4)}\langle
+    \sigma_{\alpha_1}\sigma_{\alpha_2}(z_{\beta_1}z_{\beta_2} - 
+    g_{\beta_1\beta_2})\rangle_{G^{(l)}} \\
+    & \times \langle\sigma_{\alpha_3}\sigma_{\alpha_4}(z_{\beta_3}z_{\beta_4} - 
+    g_{\beta_3\beta_4})\rangle_{G^{(l)}} + O\left(\frac{1}{n^2}\right).
+    \end{aligned}
+\end{equation}
+可以看出比较重要的一点，
+\begin{equation}
+    \frac{1}{n_l}V^{(l+1)} = O\left(\frac{1}{n}\right).
+\end{equation}
+代入到 Eq. \ref{eq:ch4_conn_4point_corr_layer_l} 中，$\mathbb{E}\left[z_{i_1;\alpha_1}^{(l+1)}
+z_{i_2;\alpha_2}^{(l+1)}z_{i_3;\alpha_3}^{(l+1)}z_{i_4;\alpha_4}^{(l+1)} \right]_{connected} 
+= \frac{1}{n_l} [\delta_{i_1i_2}\delta_{i_3i_4}V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(l+1)} 
++ \delta_{i_1i_3}\delta_{i_2i_4}V_{(\alpha_1\alpha_3)(\alpha_2\alpha_4)}^{(l+1)} + 
+\delta_{i_1i_4}\delta_{i_2i_3}V_{(\alpha_1\alpha_4)(\alpha_2\alpha_3)}^{(l+1)}]
+= O\left(\frac{1}{n}\right)$.
+类似的，recursion for quartic coupling 可以直接上式中$G$换成$g$, $V$换成$v$并且忽略$1/n^2$项即可。
+
+\subsection{Marginalization Rules}
+\xu{NOTE: 公式实在太多，这一章不影响大的理解，暂时先不搞了，主要是讲
+$p\left(z^{(l+1)}\big| \mathcal{D}\right)$ 来源于对
+$p\left(z^{(l+1)},z^{(l)}\big| \mathcal{D}\right) = 
+p\left(z^{(l+1)}\big| z^{(l)}\right)p\left(z^{(l)}\big| \mathcal{D}\right)$的积分
+的推导规则， 貌似在最后一节summize的时候这个marginalization还是一个比较关键的概念，
+后续再补上。}
+
+\subsection{RG Flow and RG Flow}
+\xu{NOTE: 这一节的解释太漂亮了，一个字我都不好意思翻译，几乎是全文保留}.
+
+The goal of this chapter was to find the marginal distribution of preactivations
+$p(z^{(l)}\big| \mathcal{D})$ in a given layer $l$ in terms of an \textbf{effective action}
+with data-dependent couplings. These couplings change - or \textbf{run} - from layer to 
+layer, and the running is determined via recursions, which in turn determine 
+how the distribution of preactivations changes with depth. Equivalently, 
+these recursions tell us how correlation functions of preactivations evolve with layer. 
+In this language, starting with independent neurons in the first layer (§4.1), we saw 
+how interactions among neurons are induced in the second layer (§4.2) and 
+then amplified in deeper layers (§4.3).
+
+Concretely, let's summarize the behavior of finite-width networks to leading order
+in the wide-network expansion. Expressing the two-point correlator of 
+preactivations in terms of the \textbf{kernel} $K_{\alpha_1\alpha_2}^{(l)}$ as
+\begin{equation}
+    \mathbb{E}\left[z_{i_1;\alpha_1}^{(l)}\right] = \delta_{i_1i_2}G_{\alpha_1\alpha_2}^{(l)}
+    = \delta_{i_1i_2}\left[K_{\alpha_1\alpha_2}^{(l)} + O\left(\frac{1}{n}\right)\right].
+\end{equation}
+这里的$K_{\alpha_1\alpha_2}^{(l)}$相当于公式 Eq. \ref{eq:ch4_2point_corr_layer_l} 中的
+$G^{(l-1)}$, 按上一节讨论，是一个$O(1)$的量.
+
+Expressing the four-point connected correlator in terms of the \textbf{four-point vertex}
+$V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(l)}$ as
+\begin{equation}
+    \begin{aligned}
+    & \mathbb{E}\left[z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}
+        z_{i_3;\alpha_3}^{(l)}z_{i_4;\alpha_4}^{(l)} \right]_{connected} \\
+    =& \frac{1}{n_{l-1}}\left[\delta_{i_1i_2}\delta_{i_3i_4}V_{(\alpha_1\alpha_2)
+    (\alpha_3\alpha_4)}^{(l)} + \delta_{i_1i_3}\delta_{i_2i_4}V_{(\alpha_1\alpha_3)
+    (\alpha_2\alpha_4)}^{(l)} + \delta_{i_1i_4}\delta_{i_2i_3}V_{(\alpha_1\alpha_4)
+    (\alpha_2\alpha_3)}^{(l)} \right].
+    \end{aligned}
+    \label{eq:ch4_recur_4point_corr}
+\end{equation}
+The running of these correlators is given by the recursions
+\begin{equation}
+    \begin{aligned}
+    K_{\alpha_1\alpha_2}^{(l+1)} =&~C_b^{(l+1)} + C_W^{(l+1)}\langle \sigma_{\alpha_1}
+    \sigma_{\alpha_2}\rangle_{K^{(l)}} \\
+    V_{(\alpha_1\alpha_2)(\alpha_3\alpha_4)}^{(l+1)}  
+    =& \left(C_W^{(l+1)}\right)^2[\langle\sigma_{\alpha_1}\sigma_{\alpha_2}
+    \sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{K^{(l)}} - 
+    \langle\sigma_{\alpha_1}\sigma_{\alpha_2}\rangle_{K^{(l)}}
+    \langle\sigma_{\alpha_3}\sigma_{\alpha_4}\rangle_{K^{(l)}}] \\
+    & + \frac{1}{4}\frac{n_l}{n_{l-1}}\left(C_W^{(l+1)}\right)^2 \sum_{\beta_1,...,
+    \beta_4\in \mathcal{D}} V_{(l)}^{(\beta_1\beta_2)(\beta_3\beta_4)}\langle
+    \sigma_{\alpha_1}\sigma_{\alpha_2}(z_{\beta_1}z_{\beta_2} - 
+    K_{\beta_1\beta_2}^{(l)})\rangle_{K^{(l)}} \\
+    & \times \langle\sigma_{\alpha_3}\sigma_{\alpha_4}(z_{\beta_3}z_{\beta_4} - 
+    K_{\beta_3\beta_4}^{(l)})\rangle_{K^{(l)}} + O\left(\frac{1}{n^2}\right).
+    \end{aligned}
+    \label{eq:ch4_recur_all_corr}
+\end{equation}
+\emph{这里可以看出$V^{(l)}$是逐层累加的 (上述第二个等式的前两项为正), 也就是说$\mathbb{E}\left[z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}
+z_{i_3;\alpha_3}^{(l)}z_{i_4;\alpha_4}^{(l)} \right]_{connected}$从$1$到$l$层逐渐增大，
+i.e. 深度越深，$p(z^{(l)}|\mathcal{D})$ 越偏离标准高斯分布，$z^{(l)}$各原子间interaction越强}.
+
+The indices on the four-point vertex are raised by the inverse metric $G_{(l)}$
+\begin{equation}
+    \begin{aligned}
+    V_{(l)}^{(\alpha_1\alpha_2)(\alpha_3\alpha_4)} \equiv & \sum_{\beta_1,...,\beta_4\in 
+    \mathcal{D}} G_{(l)}^{\alpha_1\beta_1}G_{(l)}^{\alpha_2\beta_2}
+    G_{(l)}^{\alpha_3\beta_3}G_{(l)}^{\alpha_4\beta_4}
+    V_{(\beta_1\beta_2)(\beta_3\beta_4)}^{(l)} \\
+    =& \sum_{\beta_1,...,\beta_4\in 
+    \mathcal{D}} K_{(l)}^{\alpha_1\beta_1}K_{(l)}^{\alpha_2\beta_2}
+    K_{(l)}^{\alpha_3\beta_3}K_{(l)}^{\alpha_4\beta_4}
+    V_{(\beta_1\beta_2)(\beta_3\beta_4)}^{(l)} + O\left(\frac{1}{n}\right).
+    \end{aligned}
+\end{equation}
+
+This flow is very reminiscent of the following heuristic picture, which is 
+offered as an explanation for how neural networks are supposed to work: 
+given an input, such as the image of a cat, the first few layers identify 
+low-level features from the pixels - such as the \textbf{edges} between areas of low 
+and high intensity - and then the middle layers assemble these low-level 
+features into mid-level features - such as the texture and pattern of \textbf{fur} - 
+which are further aggregated in deeper layers into higher-level representations 
+- such as \textbf{tails} and \textbf{ears} - which the last layer combines into 
+an estimate of the probability that original pixels represents a \textbf{cat}.
+Indeed, some studies support this hierarchically-ordered arrangement of feature 
+representation in trained networks (\emph{这里引用了Fergus那篇visualizing cnn的论文，很有意思}). 
+The desirability of such an arrangement emphasizes both the role and importance 
+of depth in deep learning.
+
+Some of the terms we used in discussing this heuristic picture can actually be 
+given more precise definitions. For instance, each neuron in the network - 
+including not only those in the output layer but also those in the hidden layers - 
+is a scalar function of the input and called a \textbf{feature}. The neurons of a given layer 
+can be organized into a vector-valued function of the input, which we'll refer to as 
+a \textbf{representation}. In terms of these concepts, our formalism tracks the 
+transformation of representations from one layer to the next. It is this flow of 
+representations that we term \textbf{representation group flow} or \textbf{RG flow} 
+for short. RG flow is induced via the repeated 
+marginalization ($p\left(z^{(l+1)}\big| \mathcal{D}\right)$ 来源于
+联合分布$p\left(z^{(l+1)},z^{(l)}\big| \mathcal{D}\right) = 
+p\left(z^{(l+1)}\big| z^{(l)}\right)p\left(z^{(l)}\big| \mathcal{D}\right)$对$z^{(l)}$
+的积分, $p\left(z^{(l)}\big| \mathcal{D}\right)$就是上一层fine-grained features的分布)
+of fine-grained features in the shallow layers to give a coarse-grained 
+representation in the output layer. Our notion of RG flow makes the heuristic picture 
+given above concrete.
+
+This pattern of coarse-graining has a parallel in theoretical physics, known as 
+\textbf{renormalization group flow} or \textbf{RG flow} for short. In this case, 
+the RG flow is generated by the repeated marginalization of the microscopic fine-grained 
+degrees of freedom in the system in order to obtain an effective theory of the system 
+in terms of macroscopic coarse-grained variables. Analogously, the physical couplings
+(\emph{貌似和前面几节里面coupling $v\&g$的概念有点对上了}) 
+controlling the interactions of these effective degrees of freedom run with the 
+length scale at which they are probed - e.g. the effective charge of the electron 
+will change when interrogated at different scales (\xu{NOTE: 这个物理现象不太懂，求解释}). 
+Similar to the recursion equations 
+describing the running couplings of the network representations, one can derive 
+differential equations - historically called beta functions - that govern the running 
+of the physical couplings with scale.
+
+In this scenario, the degrees of freedom are represented by a field $\phi(x)$ 
+that may take different values as a function of spacetime coordinate $x$. 
+First, one divides $\phi(x)$ into fine-grained variables $\phi^+$ consisting of 
+high-frequency modes and coarse-grained variables $\phi^-$ consisting of 
+low-frequency modes, such that the field decomposes as $\phi(x) = \phi^+(x) + \phi^-(x)$. 
+
+The full distribution is governed by the full action (\emph{这里貌似和上面几节里面根据
+$2\&4$-point correlator 求分布的action $S$有点对上了})
+\begin{equation}
+    S_{full}(\phi) = S(\phi^+) + S(\phi^-) + S_I(\phi^+, \phi^-).
+\end{equation}
+where in particular the last term describes the interactions between these two sets 
+of modes.
+
+Now, if all we care about are observables that depend only on the 
+coarse-grained modes $\phi^-$ at macroscopic scales - and such long-range 
+scales are usually the relevant ones for experiments - then this full description 
+is too cumbersome to usefully describe the outcome of such experiments. 
+In order to obtain an effective description in terms of only these coarse-grained variable 
+$\phi^-$, we can integrate out (i.e. marginalizes over) the fine-grained variables 
+$\phi^+$ as 
+\begin{equation}
+    e^{-S_{eff}(\phi^-)} = \int d\phi^+ e^{-S_{full}(\phi)}.
+    \label{eq:ch4_int_eff}
+\end{equation}
+and obtain an \textbf{effective action} $S_{eff}(\phi^−)$, providing an effective theory 
+for the observables of experimental interest. In practice, this marginalization is carried 
+out scale by scale, dividing up the field as $\phi = \phi^{(1)} + . . . + \phi^{(L)}$ 
+from microscopic modes $\phi^{(1)}$ all the way to macroscopic modes $\phi^{(L)} = \phi^−$,
+ and then integrating out the variables $\phi^{(1)}, . . . , \phi^{(L−1)}$ in sequence. 
+ Tracking the flow of couplings in the effective action through this marginalization 
+ results in the aforementioned beta functions, and in solving these differential 
+ equations up to the scale of interest, we get an effective description of 
+ observables at that scale. 
+
+This is precisely what we have been doing in this chapter for neural networks. 
+The full field $\phi$ is analogous to a collection of all the preactivations 
+$\{z^{(1)},…,z^{(L)}\}$.  Their distribution is governed by the full joint 
+distribution of preactivations 
+\begin{equation}
+    p\left(z^{(1)},...,z^{(L)}\big| \mathcal{D}\right) = p\left(z^{(L)}\big| z^{(L-1)}\right)
+    \cdots p\left(z^{(2)}\big|z^{(1)}\right)p\left(z^{(1)}\big| \mathcal{D}\right),
+\end{equation}
+with the full action
+\begin{equation}
+    S_{full}\left(z^{(1)},...,z^{(L)}\right) \equiv \sum_{l=1}^L S_M\left(z^{(l)}\right)
+    + \sum_{l=1}^{L-1}S_I\left(z^{(l+1)}\big| z^{(l)}\right).
+\end{equation}
+Here, the full action is decomposed into the mean quadratic action for variables $z^{(l)}$
+(对应于$2$-point correlator)
+\begin{equation}
+    S_M\left(z^{(l)}\right) = \frac{1}{2}\sum_{i=1}^{n_l}\sum_{\alpha_1,\alpha_2\in\mathcal{D}}
+    G_{(l)}^{\alpha_1\alpha_2}z_{i;\alpha_1}^{(l)}z_{i;\alpha_2}^{(l)}
+\end{equation}
+in terms of the mean metric $G^{(l)}$, and the interaction between neighboring layers
+(对应于connected $2$-point correlator)
+\begin{equation}
+    S_I\left(z^{(l+1)}\big| z^{(l)}\right)=\frac{1}{2}\sum_{i=1}^{n_{l+1}}
+    \sum_{\alpha_1,\alpha_2\in\mathcal{D}}\left[
+    \hat{G}_{(l+1)}^{\alpha_1\alpha_2}\left(z^{(l)}\right) - G_{(l+1)}^{\alpha_1\alpha_2}\right]
+    z_{i;\alpha_1}^{(l+1)} z_{i;\alpha_2}^{(l+1)}.
+ \end{equation}
+
+ Here we emphasized that the stochastic metric $\hat{G}_{\alpha_1\alpha_2}^{(l+1)}$ 
+ is a function of $z^{(l)}$, and the induced coupling of $z^{(l)}$ with $z^{(l+1)}$ 
+ is what leads to the interlayer interactions.
+
+Now, if all we care about are observables that depend only on the outputs of the network
+- then this full description 
+is too cumbersome. In order to obtain an effective (i.e. useful) description of 
+the distribution of outputs $z^{(L)}$, we can marginalizes over all the features 
+$\{z^{(1)},...,z^{(L-1)}\}$ as
+\begin{equation}
+    e^{-S_{eff}\left(z^{(L)}\right)} = \int \left[\prod_{l=1}^{L-1}dz^{(l)}\right]
+    e^{-S_{full}\left(z^{(1)},...,z^{(L)}\right)}.
+\end{equation}
+just as we integrated out the fine-grained modes $\phi^+$ in Eq. \ref{eq:ch4_int_eff} to 
+get the effective description in terms of coarse-grained modes $\phi^−$. 
+And, just like in the field theory example, rather than carrying out this 
+marginalization all at once, we proceeded sequentially, integrating out 
+the preactivations layer by layer. This resulted in the recursion relations 
+Eq. \ref{eq:ch4_recur_all_corr}, and in solving these recursion relations 
+up to the depth of interest, we get an effective description of 
+neural network output at that depth. 
+
+Given this perspective, our RG flow can address the effect of 
+the \emph{deep} in \emph{deep learning}. For instance, as a network get 
+deeper, do the interactions between neurons - encoded in the finite-width 
+corrections ($O(1/n)$项无法忽略) such as the four-point vertex $V^{(l)}$ - 
+get amplified or attenuated? (\xu{NOTE: 到底interaction大好还是小好？})  
+In the language of RG flow, couplings that grow with the flow are called 
+\textbf{relevant} and those that shrink are called \textbf{irrelevant}. 
+
+This question has important implications for deep learning. If all the 
+finite-width couplings were irrelevant, then finite-width networks 
+would asymptote to infinite-width architectures under RG flow. 越irrelevant 
+表示interaction between neurons越小，各层neuron的分布越接近于标准的高斯分布，那么
+deep也就失去了价值。Fortunately we'll soon find that the couplings are relevant, 
+making our life richer, albeit more complicated. In the next chapter, we'll
+show that finite networks deviate more and more from their infinite-width 
+counterparts as they get deeper. This has important practical consequences 
+in controlling the instantiation-to-instantiation fluctuations in supervised 
+training (§$10$) as well as allowing networks to learn nontrivial representations 
+of their input (§$11$). 
+
+\xu{NOTE: 所以传说中的distributed representation in deep learning,
+希望deep learning models 各个维度的features解耦/相互独立反而是不好的？保留越来越强的interaction
+反而是好的？}
+

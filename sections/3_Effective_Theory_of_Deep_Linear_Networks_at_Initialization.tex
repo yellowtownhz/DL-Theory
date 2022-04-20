@@ -7,7 +7,7 @@
 \begin{equation}
     z_{i;\alpha}^{(l+1)} = b_i^{(l+1)} + \sum_{j=1}^{n_l} W_{ij}^{l+1}z_{j;\alpha}^{(l)},
 \end{equation}
-这里$\alpha$用来表示不同的输入样本。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
+这里$\alpha$用来表示不同的输入样本index。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
 \begin{equation}
     z_{i;\alpha}^{(l)} = \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
                 W_{ij_{l-1}}^{(l)} W_{j_{l-1}j_{l-2}}^{(l-1)} \cdots W_{j_1j_0}^{(1)} x_{j_0;\alpha}
