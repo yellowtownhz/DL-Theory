@@ -1,0 +1,221 @@
+本章主要关注的是深度学习中的“学习”过程。
+
+第一节（6.1）会讨论贝叶斯推理（Bayesian Inference），贝叶斯推理为我们提供了一种将新的知识整合至已有的概率模型的方法。
+
+第二节（6.2）会解释为何贝叶斯推理能用于分析和理解DNNs从观察数据中进行学习的过程。
+
+在（6.2.1）中，我们解释贝叶斯模型拟合（Bayesian Model Fitting）是怎样适用于神经网络的，包括：（1）将preactivation分布视作先验分布（Prior Distribution），它编码了我们对模型输出的initial belief（与数据无关）。（2）推理结果，即后验分布（Poterior Distribution），让我们在新的输入上进行贝叶斯推理。（3）基于先验分布和后验分布，我们提供了关于梯度学习的贝叶斯解释。
+
+在（6.2.2）中，我们讨论了贝叶斯模型比较（Bayesian Model Comparison），包括：（1）如何根据贝叶斯Evidence来选择不同的可能的Hypotheses，即神经网络中的超参和网络架构的选择；（2）提供了一种量化归纳偏置（inductive bias）的方式；（3）奥卡姆剃刀（Occam's razor）法则是如何被自发地整合到贝叶斯推理的过程中。
+
+第三节（6.3）展示了无限宽度神经网络（Infinite-width neural networks）上贝叶斯推理的具体计算过程。第四节（6.4）展示了有限宽度神经网络（Finite-width neural networks）上贝叶斯推理的具体计算过程。这两节提供了对前述的抽象讨论的具体计算。首先，在（6.3.1）中，会讨论贝叶斯模型比较偏好cirtical initilization hyperparameters，并讨论了the principle of criticality。类似的针对有限宽度神经网络的讨论也存在于（6.4.1）中。
+然后，在（6.3.2）/（6.4.2）中，讨论了网络输出的后验分布，此时会发现只有在有限宽度网络上，输出上不同部分的correlation是非零的。
+最后，在（6.3.3）/（6.4.3）中，讨论了隐层表征的后验分布，此时会发现表征学习在无限宽度上不存在，而在有限宽度上存在。
+
+
+\subsection{Bayesian Probability}
+贝叶斯基于一个假说$H$。假说$H$将一个数字$p(A|H)$分配给``世界模型''下的陈述/命题$A$，$p(A|H)$ 代表了这些陈述的特定于世界模型$H$的相对可能性。$p(A|H)$ 一版被称为概率模型（probabilistic model）。需要注意，贝叶斯中的概率是指我们对假说$H$下的陈述$A$（发生）的信心程度（strength of belief），而不是统计学中的frequentist probability。
+以下是关于贝叶斯的一些逻辑约束。
+
+\textbf{Product Rule}。
+\begin{equation}
+    \begin{split}
+    p(A,B|H) = p(A|B,H)p(B|H) = P(B|A,H)p(A|H)
+    \end{split}
+    \label{sec6:product_rule}
+\end{equation}
+
+\textbf{Sum Rule}。
+\begin{equation}
+    \begin{split}
+    p(A|H) = \sum_{B}{p(A,B|H)}
+    \end{split}
+\end{equation}
+
+% 对必定会发生的陈述$C$，有$p(C|H)\equiv 1$，即：
+% \begin{equation}
+%     \begin{split}
+%     \sum_B{p(B|H)} = \sum_B{p(C,B|H)} = p(C|H) = 1
+%     \end{split}
+% \end{equation}
+
+基于这些约束，在$H$固定时，我们通过收集信息来修正不同beliefs的可能性。例如，观察到$A$后，我们想更新$B$的belief，可以有对\eqref{sec6:product_rule}进行变形：
+\begin{equation}
+    \begin{split}
+    P(B|A,H) =  \frac{p(A|B,H)p(B|H)}{p(A|H)}
+    \end{split}
+\end{equation}
+
+以上的变形非常重要，被称作贝叶斯法则（Bayes' rule）。其中：
+\begin{itemize}
+    \item $p(B|H)$ 被称作$B$的先验，它描述了在世界模型之下，未观测到任何额外信息时，我们对$B$的belief。
+    \item $P(B|A,H)$ 被称为 $B$ given $A$ 的后验，它描述了在观测到A后，我们的世界模型$H$是如何更新B地belief的。
+    \item $p(A|B,H)$ 被称作likelihood，在（6.2.1）中介绍。
+    \item $p(A|H)$ 被称作Evidence，在（6.2.2）中介绍。
+\end{itemize}
+
+More importantly, Bayes’ rule is the only logically consistent way to update a set of beliefs after making observations.
+
+
+\subsection{Bayesian Inference and Neural Networks}
+\subsubsection{贝叶斯模型拟合 Bayesian Model Fitting}
+
+\textbf{先验分布}。记$p(\theta|H)$是模型参数$\theta_\mu=\{b_i^{(k)}, W_{ij}^{(l)}\}$的先验分布。该先验让我们可以量化神经网络$f(x;\theta)$的参数的initial belief。譬如，对整个模型的初始化分布：
+\begin{equation}
+    \begin{split}
+    p(\theta|H) = \prod_{l=1}^{L} \left\{
+        \left[ \prod_{i=1}^{n_l} p\left(b_i^{(l)}\right) \right]
+        \left[ \prod_{i=1}^{n_l} \prod_{j=1}^{n_{l-1}}p\left(W_{ij}^{(l)}\right)\right]
+    \right\},
+    \end{split}
+\end{equation}
+其中，$p\left(b_i^{(l)}\right)$ 和 $p\left(W_{ij}^{(l)}\right)$ 是我们在第二章中提到的零均值高斯分布。
+
+注意，$H$包含了我们对模型架构的选择，如MLP/CNN/Transformer，以及我们关于这些架构的超参数（深度$L$，宽度$n_l$和激活函数$\sigma(z)$）。
+
+记$z_{D}^{(l)}\equiv \left\{z_{i;\delta}^{(l)}\right\}$是数据集$D$上的输入$x_{i;\delta}\in D$ 在第$l$层的preactivations。这样，该第$l$层的preactivations可以和上述的模型参数的先验分布关联起来：
+\begin{equation}
+    \begin{split}
+    p(z_{D}^{(l)}|H) 
+    = \int \left[\prod_{\mu=1}^{P} d\theta_\mu\right] p \left(z_D^{(l)},\theta|H \right) 
+    = \int \left[\prod_{\mu=1}^{P}d\theta_\mu\right] p \left(z_D^{(l)}|\theta,H\right) p(\theta|H)
+    \end{split}
+\end{equation}
+
+上式的第一个等号利用了sum rule（连续变量的sum rule表现为积分），第二个等号利用了product rule。上述式子量化了我们对不同的神经网络变量的initial belief。更进一步地，对于隐层$l$，该分布是我们对针对特定输入的某一特征表征的belief；对于输出层$L$，该分布表示了我们对$f(x;\theta)$的行为的initial beliefs。即，对任意观测量$O=O(\theta)$，我们的先验belief取决于：
+\begin{equation}
+    \begin{split}
+    p(O|H) = \int \left[\prod_{\mu=1}^{P}d\theta_\mu\right]
+    p(O|\theta,H) P(\theta|H)
+    \end{split}
+\end{equation}
+
+% 将网络的输出$z_D^{(L)}$作为一个观测量，那么当且仅当给定的参数是deterministic的时候（即上式中的$p(\theta|H)$是确定的），输出层的先验分布$p\left(z_D^{}(L)|H\right)$ 相当于第二章中讨论的输出分布（2.35），即：
+% \begin{equation}
+%     \begin{split}
+%         p\left(z_D^{}(L)|\theta, H\right) = \prod_{i=1}^{n_L}\prod_{\delta\in D}\delta\left(z_{i;\delta}^{(L)}-f_i(x_\delta;\theta)\right)
+%     \end{split}
+% \end{equation}
+% 其中，$f_i(x_\delta;\theta)$ 代表定义MLP的迭代式（原文公式2.5）。基于此，更早章节中的相关计算可以直接沿用。
+
+\textbf{后验分布}。当我们收集到更多Ground-truth信息$A$，而想要更新我们对$f(x;\theta)$的belief时，为了在合入信息时保证逻辑一致性，我们应该使用Bayes' rule。具体来说，要更新关于参数的belief，根据Bayes' rule，有：
+\begin{equation}
+    \begin{split}
+        p(\theta|A,H) = \frac{p(A|\theta,H)p(\theta|H)}{p(A|H)}
+    \end{split}
+    \label{sec6:bayesian_inference}
+\end{equation}
+
+给定该后验分布，对于神经网络的任意观测量$O$，我们的beliefs从先验$p(O|H)$向后验$p(O|A,H)$偏移：
+\begin{equation}
+    \begin{split}
+        p(O|A,H) = \int \left[\prod_{\mu=1}^{P}d\theta_\mu\right]
+        p(O|\theta,H)P(\theta|A,H)
+    \end{split}
+\end{equation}
+（FIXME：Why $p(O|\theta,A,H)\rightarrow p(O|\theta,H)$，可能是因为$A$无法直接影响$O$，而是间接通过影响$\theta$来影响$O$，所以$p(O|\theta,A,H)$和$p(O|\theta,H)$是等价的？）
+上式同样利用了sum rule和product rule。上述二式定义了新的信息$A$如何用于改变我们对任意神经网络观测量的belief的（先改变$\theta$,再改变$O$）。
+
+一般来说，$A$来自于数据集$\mathcal{A}$上的输入输出对：
+\begin{equation}
+    \begin{split}
+        A \equiv \left\{(x_{j;\hat{\alpha}},y_{i;\hat{\alpha}})\right\}|_{\hat{\alpha}\in \mathcal{A}}
+    \end{split}
+\end{equation}
+
+记$y_{\mathcal{A}}\equiv{y_{i;\hat{\alpha}}}$，likelihood可以表示为：
+\begin{equation}
+    \begin{split}
+        p(A|\theta,H)\equiv p(y_{\mathcal{A}}|\theta, H) = 
+        \prod_{\hat{\alpha}\in\mathcal{A}} \prod_{i=1}^{n_L} \delta\left(y_{i;\hat{\alpha}} - f_i(x_{\hat{\alpha};\theta})\right)
+    \end{split}
+\end{equation}
+% 上式的$\delta$文中未解释，但我个人的理解是将$y_{i;\hat{\alpha}}$和$f_i(x_{\hat{\alpha};\theta})$的距离控制在$[0,1]$之间的某个表示函数，如Negative Log Likelihood。
+上述等式显式地约束了模型参数，使其满足$f_i(x_{\hat{\alpha};\theta})=y_{i;\hat{\alpha}}$以拟合我们的观测。由于我们首先观察到Ground-truth $A$，然后把$p(A|\theta,H)$解释为模型参数$\theta$ fit 观察$A$的可能性，所以我们把 $p(A|\theta,H)$ 称之为$likelihood$，即：the likelihood of the model parameters $\theta$ for the observation $A$.
+
+基于Likelihood，一个常用的表示是Negative Log Likelihood (Loss)，记作$L_{\mathcal{A}}(\theta)$：
+\begin{equation}
+    \begin{split}
+        p(y_{\mathcal{A}}|\theta, H) \equiv exp\left[-L_{\mathcal{A}}(\theta)\right].
+    \end{split}
+\end{equation}
+引入不确定性假说的话（即观测值从带有随机噪音的高斯中采样），代入negative log likelihood可以变形为MSE loss（不详细展开）：
+\begin{equation}
+    \begin{split}
+        L_{MSE}(\theta) = \sum_{\hat{\alpha}\in\mathcal{A}}\left\{
+            \frac{1}{2\sigma_{\epsilon}^{2}}[f_{i}(x_{\hat{\alpha};\theta}-y_{i;\hat{\alpha}})+\frac{1}{2}log\left(2\pi\sigma_{\epsilon}^{2}\right)]
+        \right\}
+    \end{split}
+\end{equation}
+当网络的输出$f_{i}(x_{\hat{\alpha};\theta}$越接近目标值$y_{i;\hat{\alpha}}$时，MSE减少，而Likelihood增加。由于loss的计算在数据集中的所有输入输出对上求和，因而，当观测数据对增加时，likelihood逐渐主导了prior（即\eqref{sec6:bayesian_inference}的分子），这使得，若我们获取足够的信息，最终的prior beliefs会被我们从观察中学到的信息完全取代。
+
+基于此，贝叶斯模型拟合（Bayesian model fitting）即：利用\eqref{sec6:bayesian_inference}来提升估计函数的准确率。此处，我们主要用到了先验分布、后验分布以及likelihood，而剩下的evidence将在后面使用到。
+
+基于拟合的贝叶斯模型进行推理。记输出为$O=z^{(L)}$，有：
+\begin{equation}
+    \begin{split}
+        p(z^{(L)}|A,H) = \int \left[\prod_{\mu=1}^{P}d\theta_\mu\right]
+        p(z^{(L)}|\theta,H)P(\theta|A,H)
+    \end{split}
+\end{equation}
+
+\subsubsection{贝叶斯模型比较 Bayesian Model Comparison}
+在前面的讨论中，我们没有涉及到贝叶斯evidence $p(y_\mathcal{A}|H)$。在前述的贝叶斯模型拟合过程中，由于evidence不依赖于模型参数，实际上它是与整个拟合过程是相互独立的；而在前述的贝叶斯预测中，它是后验的normalization factor，不影响最终的预测结果。
+
+要使用到evidence，我们考虑多个可能解释数据的世界模型$H$。这也是贝叶斯模型比较的核心：using the evidence to weigh the plausibility of diﬀerent probabilistic models as explanations for all of our observations. 在深度学习中，``贝叶斯模型比较''是在比较对不同世界模型（模型架构/超参数设置）的relative beliefs，即$\frac{p(H_1|y_{\mathcal{A}})}{p(H_2|y_{\mathcal{A}})}$。
+
+基于evidence，使用Bayes' rule，有：
+\begin{equation}
+    \begin{split}
+        p(H_a|y_{\mathcal{A}}) = \frac{p(y_{\mathcal{A}}|H_a)p(H_a)}{p(y_{\mathcal{A}})}
+    \end{split}
+\end{equation}
+左侧的后验，编码了给定观测数据$y_{\mathcal{A}}$时，我们对不同世界模型/假说$H_a$的可能性的belief；右侧的先验$p(H_a)$编码了我们对这些假说的initial belief。旧的evidence（上一节中）在此处（模型比较）中充当了likelihood的角色，而新的evidence则是一个可以忽略一个noralization factor。
+
+要比较两个假说$H_1$和$H_2$中哪个更好地拟合数据，使用relative beliefs：
+
+\begin{equation}
+    \begin{split}
+        \frac{p(H_1|y_{\mathcal{A}})}{p(H_2|y_{\mathcal{A}})} = \left[\frac{p(y_\mathcal{A}|H_1)}{p(y_\mathcal{A}|H_2)}\right] \frac{p(H_1)}{p(H_2)}
+    \end{split}
+\end{equation}
+方框中的部分被称作贝叶斯因子（Bayes' factor），贝叶斯因子右侧的$\frac{p(H_1)}{p(H_2)}$一般是$1$。因此，贝叶斯因子包含了所有的观察依赖（observation dependence）以及描述了我们应该如何根据新的数据$y_{\mathcal{A}}$来更新相对belief。当比率大于$1$时，代表假说$H_1$更有优势，反之假说$H_2$更有优势。
+
+\textbf{奥卡姆剃刀法则（Occam's razor）}。奥卡姆剃刀法则是指我们应该选择能够拟合所有观察值的最简单的假说。在机器学习中，这启发我们应该倾向于选择参数量更少的模型。根据上式中，一个简单的实现剃刀的方法是，主观地调整在不同复杂度的假说上的先验。即，使得$\frac{p(H_1)}{p(H_2)}$不等于$1$，也就是说，对于简单模型，赋予更大的$P(H_a)$，这使得它的relative prior更大。然而我们不需要这么做，实际上，贝叶斯模型比较通过贝叶斯因子，已经隐式地实现了奥卡姆剃刀法则。
+
+具体来说，先验分布$p(z_\mathcal{A}^{(L)}|H_a)$ 需要被$p(y_\mathcal{A}|H_a)$ normalized。这意味着当$H_a$很复杂以至于可以解释大量的可能观察（可能的观察对应了琐碎的细节乃至于噪音）时，它对于每个观察$y_\mathcal{A}$的值应该是小的（因为大量的观察值的belief sum为1）；而当$H_a$很简单以至于只能解释少量的观察时，对应的$y_\mathcal{A}$的值时更大的。这最终使得更简单、且能正确预测的模型更被$\left[\frac{p(y_\mathcal{A}|H_1)}{p(y_\mathcal{A}|H_2)}\right]$偏好。
+
+\textbf{归纳偏置 Inductive Bias}。如第二章所讨论的，归纳偏置是指神经网络中的一些隐含的性质，这些性质使潜在的候选函数集${f(x;\theta)}$更好地表示特定数据集和任务的特性。 从贝叶斯的角度，归纳偏置代表了我们在有所观测之前对所需函数$f(x)$的先验猜想。实际上，不同的假说/世界模型（网络结构和超参数）以及学习算法可能有不同的归纳偏置，例如奥卡姆剃刀法则算是贝叶斯推理的归纳偏置。关于归纳偏置的一个简单例子：当我们确定某个statement $B$一定是错的，因而让假说$H_{\hat{B}}$将$p(B|H_{\hat{B}})=0$时，那么根据Bayes' Rule，即使我们搜集到一些关于$B$可能会发生的观测量，$B$的后验概率永远不会被更新，而只会是$0$。如果$B$真的永远不会发生，那么$H_{\hat{B}}$是一个好的假说；但如果$B$会发生，那么$H_{\hat{B}}$是不恰当的。因此，归纳偏置的好或坏取决于Ground-truth。
+
+
+\subsection{有限宽度下的贝叶斯推理Bayesian Inference at Infinite Width}
+本节提供了三个推论：
+\begin{itemize}
+    \item 通过计算前述的evidence，我们会发现贝叶斯模型比较 偏好 足够深的神经网络的临界状态（criticality） （TODO：第三/五章内容相关）。
+    \item 通过计算网络输出$p(z_{\mathcal{B}}^{(L)}|y_{\mathcal{A},H})$的后验分布，发现在无限宽度下，输出的不同部分完全互相独立（实际场景中，component i的结果可能会对conponent j的结果很有用，如multi-label）。这是无限宽度神经网络的第一个bad inducative bias。
+    \item 通过计算倒数第二层的preactivations的后验分布$p(z_{D}^{L-1}|y_{\mathcal{A}},H)$，发现它与倒数第二层的先验分布$p(z_{D}^{L-1}|H)$ 完全一致，这证明无限宽度网络缺乏表征学习的能力（缺乏inter-layer correlation），与深度学习的初衷是相违背的。这是无限宽度神经网络的第二个bad inducative bias。
+\end{itemize}
+
+基于上述bad inducative biases，使用有限宽度的神经网络是更合适的选择。
+
+
+\subsection{无限宽度下的贝叶斯推理Bayesian Inference at Finite Width}
+本节提供了三个推论：
+\begin{itemize}
+    \item 有限宽度神经网络，由于神经元间的非高斯交互（non-Gaussian interactions），包含了一项被称为neural association的归纳偏置。这项归纳偏置是与生物学中的Hebbian learning呼应的（TODO：第三/五章内容相关）。
+    \item 通过计算网络输出$p(z_{\mathcal{B}}^{(L)}|y_{\mathcal{A},H})$的后验分布，发现\textbf{neural association一方面依赖于}对输出的后验分布的均值的计算（证明了层内关联 vs. 无限宽度中的相互独立）。
+    \item 通过计算倒数第二层的preactivations的后验分布$p(z_{D}^{L-1}|y_{\mathcal{A}},H)$，发现\textbf{neural association另一方面依赖于}对倒数第二层的preactivations的后验分布的计算（证明了层间关联 vs. 无限宽度中的层间无关联）。
+\end{itemize}
+
+
+\textbf{Hebbian Learning} The general idea is an old one, that any two cells or systems of cells that are repeatedly active at the same time will tend to become ``associated'' so that activity in one facilitates activity in the other.
+
+形式上可以表示为：
+\begin{equation}
+    \begin{split}
+        p\left(z_2^{(l)}|z_1^{(l)}\right) = \frac{p\left(z
+        _1^{(l)}, z_2^{(l)}\right)}{p\left(z
+        _1^{(l)}\right)}
+    \end{split}
+\end{equation}
+注意，在无限宽度下，$p\left(z_2^{(l)}|z_1^{(l)}\right)=p\left(z_2^{(l)}\right)$。
