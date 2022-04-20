@@ -1,5 +1,5 @@
 在第三章中，分析了Deep Linear Network（Sec. \ref{sec:3-1}）中层与层之间前传的统计规律。
-本章的目的是利用第三章讲到的的临界状态（criticality, Sec. \ref{sec:3}）、扰动（fluctuation, Sec. \ref{sec:3}）和第四章的Effective Theory（Sec. \ref{sec:4}），把MLP中结论推广到任意激活函数中。
+本章的目的是利用第三章讲到的的临界状态（criticality, Sec. \ref{sec:3}）、扰动（fluctuation, Sec. \ref{sec:3}）和第四章的Effective Theory（Sec. \ref{sec:4}），把MLP中结论推广到任意激活函数中，寻找合适的初始化条件。
 
 \subsection{Criticality Analysis of the Kernel}
 在第三章得到一个结论，在MLP中，两个输入$(x_{\alpha_1}, x_{\alpha_2})$协方差$G_{\alpha_1\alpha_2}^{(0)}$传递到$l$层的幅度为:
@@ -72,11 +72,11 @@ $K_{\alpha\beta}$的统计含义就是两个输入$\alpha$和$\beta$之间的协
         \end{aligned}
     \right.
 \end{equation}
-在scale-invariant函数的条件下，helper function $g$变得非常简单：
+在scale-invariant函数的条件下，辅助函数$g$变得非常简单：
 \begin{equation}
-    g(K)=A_2 K, \qquad A_2\equiv \frac{a_{+}^2+a_{-}^2}{2}
+    g(K)=A_2 K, \qquad A_2\equiv \frac{a_{+}^2+a_{-}^2}{2},
 \end{equation}
-数学推导可得，这种条件下两个susceptibility相等，并且和$K_{00}^{(l)}$独立：
+$A_2$是由scale-invariant函数形式决定的常数。数学推导可得，这种条件下两个susceptibility相等，并且和$K_{00}^{(l)}$独立：
 \begin{equation}
     \chi_\parallel(K_{00}^{(l)})=\chi_\perp(K_{00}^{(l)})=A_2 C_W \equiv \chi
 \end{equation}
@@ -112,7 +112,7 @@ $K_{\alpha\beta}$的统计含义就是两个输入$\alpha$和$\beta$之间的协
 
 在实际使用中，上述算法计算过于繁琐，所以改为第二种更容易操作算法：
 \begin{itemize}
-    \item 第一步，搜索$K_{00}^{*}\ge1$，找出满足$LHS\equiv\left[\frac{2K^2 \langle\sigma^{'}(z)\sigma^{'}(z)\rangle_K}{\langle\sigma(z)\sigma(z)(z^2-K)\rangle_K}\right]\arrowvert_{K=K_{00}^*}$的$K_{00}^{*}$
+    \item 第一步，搜索$K_{00}^{*}\ge1$，找出满足$LHS\equiv\left[\frac{2K^2 \langle\sigma^{'}(z)\sigma^{'}(z)\rangle_K}{\langle\sigma(z)\sigma(z)(z^2-K)\rangle_K}\right]\arrowvert_{K=K_{00}^*}=1$的$K_{00}^{*}$
     \item 第二步，把找到的$K_{00}^{*}$代入公式$C_W=[\langle\sigma^{'}(z)\sigma^{'}(z)\rangle_{K_{00}^*}]^{-1}$和$C_b=K_{00}^*-\frac{\langle\sigma(z)\sigma(z)\rangle_{K_{00}^*}}{\langle\sigma^{'}(z)\sigma^{'}(z)\rangle_{K_{00}^*}}$，得到满足临界条件的初始化参数（保证$C_b\ge0, C_W\ge 0$）。
 \end{itemize}
 在图\ref{fig:4-tanh}右图中可以看到，满足临界条件时，$K_{00}^*\to0$，代入公式可得：
@@ -135,7 +135,7 @@ $\texttt{sigmoid}$的公式为：
 \begin{equation}
     \sigma(z)=\frac{1}{1+\exp^{-z}}
 \end{equation}
-由图\ref{fig:4-sigmoid}可以看到，$\texttt{sigmoid}$在$K_{00}^*=0$时，$LHS=0$，满足临界条件。但是此时$C_b=-\left(\frac{\sigma(0)}{\sigma^{'}(0)}\right)^2$，所以$\texttt{sigmoid}$函数没有临界状态。
+由图\ref{fig:4-sigmoid}可以看到，$\texttt{sigmoid}$在$K_{00}^*=0$时，$LHS=1$，满足临界条件。但是此时$C_b=-\left(\frac{\sigma(0)}{\sigma^{'}(0)}\right)^2$，所以$\texttt{sigmoid}$函数没有临界状态。
 
 \subsubsection{$\texttt{softplus}$}
 \begin{figure}[!ht]
@@ -148,7 +148,7 @@ $\texttt{sigmoid}$的公式为：
     \end{subfigure}
     \begin{subfigure}
     {
-        \includegraphics[width=0.5\textwidth]{images/4_softplus_LHS.bmp}
+        \includegraphics[width=0.45\textwidth]{images/4_softplus_LHS.bmp}
         \label{fig:4-softplus-LHS}
     }
     \end{subfigure}
@@ -163,11 +163,12 @@ $\texttt{softplus}$的计算公式为：
 
 \subsubsection{$\texttt{SWISH}$ and $\texttt{GELU}$}
 分析略去，结论：
+如果要使用平滑版本的$\texttt{ReLU}$函数，$\texttt{SWISH}$和$\texttt{GELU}$都不是一个好的选择，推荐使用$\texttt{tanh}$。
 
-如果要使用平滑版本的$\texttt{ReLU}$函数，$\texttt{SWISH}$和$\texttt{GELU}$都不是一个好的选择，应该使用$\texttt{tanh}$。
+总的来说，给定一种非线性函数，利用这套临界函数的理论可以计算出以这种函数作为激活函数的神经网络的初始化条件。
 
 \subsection{Fluctuations}
-主要结论和Sec. \ref{sec:3-3}一致：
+在非线性激活函数条件下，主要结论和Sec. \ref{sec:3-3}一致：
 \begin{itemize}
     \item 在deep linear networks中，有限宽网络带来的方差抖动（finite-width fluctuations）会随着depth-to-width的比值增大而增大。这个结论在和非线性激活函数的网络同样适用。
     \item 在$L/n$固定，$n,L\to \infty$的情况下，绝大部分足够宽、不是太深的网络都可以不用考虑NLO metric $G_{\alpha_1\alpha2}^{\{1\}\{l\}}$的作用
