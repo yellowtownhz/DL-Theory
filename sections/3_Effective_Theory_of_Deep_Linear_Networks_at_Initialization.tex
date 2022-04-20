@@ -1,12 +1,13 @@
 这一章主要从线性神经网络进行推导，相当于是激活函数为线性函数的MLP网络。
 
 \subsection{Deep Linear Networks}
+\label{sec:3-1}
 
 线性神经网络中，$l+1$层第$i$个原子与$l$层原子的迭代关系如下:
 \begin{equation}
     z_{i;\alpha}^{(l+1)} = b_i^{(l+1)} + \sum_{j=1}^{n_l} W_{ij}^{l+1}z_{j;\alpha}^{(l)},
 \end{equation}
-这里$\alpha$用来表示不同分布的输入（\xu{这里不是太清楚$\alpha$的含义, 原文也没有进行任何解释}）。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
+这里$\alpha$用来表示不同的输入样本。实际上可以直接从输入$x$到第$l$层进行合并，变成一个矩阵相乘的形式:
 \begin{equation}
     z_{i;\alpha}^{(l)} = \sum_{j_0=1}^{n_0}\sum_{j_1=1}^{n_1} \cdots \sum_{j_{l-1}=1}^{n_{l-1}}
                 W_{ij_{l-1}}^{(l)} W_{j_{l-1}j_{l-2}}^{(l-1)} \cdots W_{j_1j_0}^{(1)} x_{j_0;\alpha}
@@ -25,7 +26,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
                                     = \delta_{i_1i_2}\delta_{j_1j_2}\frac{C_W}{n_{l-1}}
     \label{eq:expectation}
 \end{equation}
-(\xu{why $n_{l-1}$ here?}) 这里$\delta_{ij} = 1 ~ if ~ i=j, else ~ \delta_{ij} = 0$.
+这里$1/n_l$为对各层原子数进行归一化的系数，$\delta_{ij} = 1 ~ if ~ i=j, else ~ \delta_{ij} = 0$.
 
 要研究$z^{(l)}$的分布问题，按照高斯分布的研究方式的话，主要关注$z^{(l)}$的均值和方差。均值推导如下:
 \begin{equation}
@@ -39,6 +40,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
 这里用到了层与层之间参数相互独立的假设。接下来就是要研究$z^{(l)}$的协方差分布的问题。
 
 \subsection{Criticality [物理学临界状态]}
+\label{sec:3-2}
 
 \subsubsection{数学推导}
 这一节首先研究一下两个原子之间的协方差$\mathbb{E}[z_{i_1;\alpha_1}^{(l)}z_{i_2;\alpha_2}^{(l)}]$，
@@ -57,6 +59,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
              \delta_{i_1i_2}\delta_{j_1j_2}x_{j_1;\alpha_1}x_{j_2;\alpha_2}
              = \delta_{i_1i_2}C_W \frac{1}{n_0}\sum_{j=1}^{n_0}x_{j;\alpha_1}x_{j;\alpha_2}.
 \end{equation*}
+这里稍微用到了维克定理的做法。
 类似地，可以得到从$l$到第$l+1$的递推公式:
 \begin{equation}
     \mathbb{E}[z_{i_1;\alpha_1}^{(l+1)} z_{i_2;\alpha_2}^{(l+1)}] = 
@@ -69,6 +72,7 @@ Here $\mathcal{W}$ is an $n_l$-by-$n_0$ matrix:
     G_{\alpha_1\alpha_2}^{(0)} \equiv \frac{1}{n_0} \sum_{i=1}^{n_0} x_{i;\alpha_1}x_{i;\alpha_2}, ~~
     G_{\alpha_1\alpha_2}^{(l)} \equiv \frac{1}{n_l} \sum_{j=1}^{n_l} 
         \mathbb{E}[z_{j;\alpha_1}^{(l)}z_{j;\alpha_2}^{(l)}],
+    \label{eq:2corr-def}
 \end{equation*}
 根据这个定义以及公式\ref{eq:l-2-lp1}，可以把从$0$到$1$以及从$l$到$l+1$递归地写成:
 \begin{equation}
@@ -88,6 +92,7 @@ $l$层的幅度为:
 \end{equation} 
 
 \subsubsection{物理学解释}
+\label{sec:2point-ana}
 根据迭代公式 \ref{eq:recursion}, 当$C_W > 1$, 随着层数$l$递增，$G_{\alpha_1\alpha_2} \to \infty$ (exploding,
 numerical instability); 当 $C_W < 1$, $G_{\alpha_1\alpha_2} \to 0$ (valishing, loss of information), 
 原文中称之为``trivial fixed point''. 这里是从协方差传递的角度进行分析， 
@@ -96,10 +101,163 @@ numerical instability); 当 $C_W < 1$, $G_{\alpha_1\alpha_2} \to 0$ (valishing, 
 \begin{equation*}
     G_{\alpha\alpha}^L = \mathbb{E} [\frac{1}{n_L} \sum_{j=1}^{n_L}(z_{j;\alpha}^{(L)})^2].
 \end{equation*}
-接上文，当$C_W=1$的时候，各层的协方差都是固定的 
+接上文，当$C_W=1$的时候 (Criticality, 临界状态)，各层的协方差都是固定的 
 $G_{\alpha_1\alpha_2}^{(l)} = G_{\alpha_1\alpha_2}^{(0)} \equiv G_{\alpha_1\alpha_2}^*$. 这里
 协方差保持一致的意义在于，输入数据的结构信息(structure)在网络传递的过程中得到了保留。
 
 \subsection{Fluctuations [物理学中的扰动]}
-上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系，基本思路是拆分为$2$个原子
-之间协方差的组合。
+\label{sec:3-3}
+\subsubsection{数学推导}
+上一节研究了$2$个原子之间的协方差关系，为了进行扩展，接下来研究$4$个原子的协方差关系($4$-point correlator)，
+基本思路是拆分为$2$个原子之间协方差的组合。
+跟公式 \ref{eq:2corr-def} 一样的定义，$4$阶归一化内积可以定义为：
+\begin{equation}
+    G_4^{(l)} = \frac{1}{n_l^2} \sum_{j,k=1}^{n_l} 
+        \mathbb{E}[z_j^{(l)}z_j^{(l)}z_k^{(l)}z_k^{(l)}].
+\end{equation}
+从$l$层到$l+1$层的$4$阶correlator可以进行如下推导:
+\begin{equation}
+    \begin{aligned}
+        & \mathbb{E}[z_{i_1}^{(l+1)}z_{i_2}^{(l+1)}z_{i_3}^{(l+1)}z_{i_4}^{(l+1)}] \\
+        =& \sum_{j_i,j_2,j_3,j_4=1}^{n_l} 
+            \mathbb{E}[W_{i_1j_1}^{(l+1)}W_{i_2j_2}^{(l+1)} W_{i_3j_3}^{(l+1)}W_{i_4j_4}^{(l+1)}] 
+            \mathbb{E}[z_{j_1}^{(l)}z_{j_2}^{(l)} z_{j_3}^{(l)}z_{j_4}^{(l)}] \\
+        =& \frac{C_W^2}{n_l^2} \sum_{j_i,j_2,j_3,j_4=1}^{n_l} 
+            [(\delta_{i_1i_2}\delta_{j_1j_2}\delta_{i_3i_4}\delta_{j_3j_4}
+            +\delta_{i_1i_3}\delta_{j_1j_3}\delta_{i_2i_4}\delta_{j_2j_4}
+            +\delta_{i_1i_4}\delta_{j_1j_4}\delta_{i_2i_3}\delta_{j_2j_3})] \\
+        & \times \mathbb{E}[z_{j_1}^{(l)}z_{j_2}^{(l)}z_{j_3}^{(l)}z_{j_4}^{(l)}] \\
+        = & C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_l^2} 
+            \sum_{j,k=1}^{n_l}\mathbb{E}[z_j^{(l)}z_j^{(l)}z_k^{(l)}z_k^{(l)}] \\
+        = & C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) G_4^{(l)},
+    \end{aligned}
+    \label{eq:4point-recur-1}
+\end{equation}
+由此可得,
+\begin{equation}
+    \begin{aligned}
+    G_4^{(l+1)} = & \frac{1}{n_{l+1}^2} \sum_{i,j=1}^{n_{l+1}}
+        \mathbb{E}[z_i^{(l+1)}z_i^{(l+1)}z_j^{(l+1)}z_j^{(l+1)}] \\
+        = & \frac{1}{n_{l+1}^2} C_W^2 \sum_{i,j=1}^{n_{l+1}}
+            (\delta_{ii}\delta_{jj} + \delta_{ij}\delta_{ij} + \delta_{ij}\delta_{ji}) G_4^{(l)} 
+        = C_W^2 (1 + \frac{2}{n_{l+1}}) G_4^{(l)}.
+    \end{aligned}
+\end{equation}
+根据公式\ref{eq:4point-recur-1}, 从$0$到$1$层的推导类似:
+\begin{equation*}
+    \begin{aligned}
+     & \mathbb{E}[z_{i_1}^{(1)}z_{i_2}^{(1)}z_{i_3}^{(1)}z_{i_4}^{(1)}] \\
+    =& C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_0^2} 
+            \sum_{j,k=1}^{n_0} \mathbb{E}[x_jx_jx_kx_k] \\
+    =& C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \frac{1}{n_0^2} 
+            \sum_{j=1}^{n_0} \mathbb{E}[x_jx_j] \sum_{k=1}^{n_0} \mathbb{E}[x_k x_k] \\
+    =&  C_W^2 (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4} 
+            + \delta_{i_1i_4}\delta_{i_2i_3}) (G_2^{(0)})^2
+    \end{aligned}
+\end{equation*}
+这里用到了同一条数据不同维度$x_j$和$x_k$互不相关的假定。同样地，可以得到第一层$4$-point correlator为:
+\begin{equation}
+    G_4^{(1)} = C_W^2 (1+ \frac{2}{n_1}) (G_2^{(0)})^2
+    \label{eq:4point-0}
+\end{equation}
+综合公式\ref{eq:4point-0}和公式\ref{eq:4point-recur}, 可以得到:
+\begin{equation}
+    G_4^{(l)} = C_W^{2l}[\prod_{l'=1}^l(1+\frac{2}{n_{l'}})](G_2^{(0)})^2
+        = \prod_{l'=1}^l(1+\frac{2}{n_{l'}})(G_2^{(l)})^2.
+    \label{eq:4point-recur}
+\end{equation}
+第二个等号用到了公式\ref{eq:recursion}的结果。
+
+\subsubsection{物理学解释}
+根据公式\ref{eq:4point-recur}, 如果是一个无限宽的网络 ($n_l \to \infty$), 那么递推公式将
+变成 $G_4^{(l)} = (G_2^{(l)})^2$，full four-point correlator 将变成：
+\begin{equation*}
+    \mathbb{E}[z_{i_1}^{(l)}z_{i_2}^{(l)}z_{i_3}^{(l)}z_{i_4}^{(l)}]
+        = (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4}
+            + \delta_{i_1i_4}\delta_{i_2i_3}) (G_2^{(l)})^2.
+\end{equation*}
+This is exactly what we'd find if the preactivation distribution were Gaussian: 
+the four-point correlator is determined entirely by the two-point correlator, 
+with the tensor structure determined by Wick's theorem. 这就表示同一层原子之间相互独立，
+且可以用高斯分布进行描述。
+
+实际神经网络肯定是有限宽度，那么就无法完全服从上述高斯分布了，为了方便推导，可以假定
+$n_1 = n_2 = \cdots = n_{L-1} = n$. 然后公式\ref{eq:4point-recur}变成:
+\begin{equation}
+    \begin{aligned}
+    G_4^{(l)} - (G_2^{(l)})^2 =& \left[\left( 1 + \frac{2}{n} \right)^{l-1}
+        - 1\right]\left(G_2^{(l)}\right)^2 \\
+        =& \frac{2(l-1)}{n}\left(G_2^{(l)}\right)^2 + O\left(\frac{1}{n^2}\right).
+    \end{aligned}
+    \label{eq:4point-deviation}
+\end{equation}
+这里用到了对$1/n$在$0$处的泰勒展开: 
+$f(x)=(1+2x)^{l-1} = f(0) + f'(0)x + O(x^2) = 1 + (l-1)2x + O(x^2)$.
+由此，第一章中定义的the connected four-point correlator (sec. \ref{sec:prob-corr-stat})
+可以表示为:
+\begin{equation}
+    \mathbb{E}\left[ z_{i_1}^{(l)}z_{i_2}^{(l)}z_{i_3}^{(l)}z_{i_4}^{(l)} \right] |_{connected}
+        = (\delta_{i_1i_2}\delta_{i_3i_4} + \delta_{i_1i_3}\delta_{i_2i_4}
+            + \delta_{i_1i_4}\delta_{i_2i_3}) \left[G_4^{(l)} - (G_2^{(l)})^2\right].
+\end{equation}
+
+1). \textbf{从$4$-point connected correlator的角度来理解}，结合公式\ref{eq:4point-deviation}
+和section \ref{sec:2point-ana}中的分析，
+在临界状态下 ($C_W=1$)，$G_2^{(l)}$是一个常数， \emph{这个$4$阶connected correlator的值取决于
+depth-to-width ratio $l/n$. 值越大，各层原子离独立高斯分布的gap越大，即随着网络加深，
+原子分布的non-Gaussianity也逐渐增大。 如果$l/n$比较小的话，preactivation statistics in 
+layer $l$ 还是可以维持在一个nearly-Gaussian的水平。}
+
+2). \textbf{从$4$阶协方差的角度来理解}，\emph{公式\ref{eq:4point-deviation} controls intralayer 
+interactions between distinct neurons, with the strength of the interactions 
+growing with depth.} 层数越深，$l/n$越大，各原子之间的耦合也越强。
+
+3). \textbf{从观测变量抖动 (fluctutations)的角度} (some observables that are 
+deterministic in the infinite-width limit start to fluctuate at finite width).
+首先从一个最简单的观测变量$l$层输出的平均幅度来看:
+\begin{equation}
+    \mathcal{O}^{(l)} \equiv \mathcal{O}(z^{(l)}) \equiv 
+        \frac{1}{n} \sum_{j=1}^n z_j^{(l)}z_j^{(l)},
+\end{equation}
+which captures the average magnitude of the preactivations over all the different
+neurons in a hidden layer $l$ for a given instantiation of the network weights.
+不同weights下的输出幅度均值可以计算如下:
+\begin{equation*}
+    \mathbb{E}\left[\mathcal{O}^{(l)}\right] = 
+        \frac{1}{n}\sum_{j=1}^n \mathbb{E}[z_j^{(l)}z_j^{(l)}] = G_2^{(l)},
+\end{equation*}
+不同weights instantiation下该观察变量的抖动幅度可以通过其方差来度量:
+\begin{equation}
+    \begin{aligned}
+        \mathbb{E}\left[\left(\mathcal{O}^{(l)} - \mathbb{E}\left[
+            \mathcal{O}^{(l)} \right]\right)^2\right]
+        =& \frac{1}{n^2} \sum_{j,k=1}^n 
+            \mathbb{E}\left[z_j^{(l)}z_j^{(l)}z_k^{(l)}z_k^{(l)}\right]
+            - \left(G_2^{(l)}\right)^2 \\
+        =& G_4^{(l)} - \left(G_2^{(l)}\right)^2 
+        = \frac{2(l-1)}{n}\left(G_2^{(l)}\right)^2 + O\left(\frac{1}{n^2}\right).
+    \end{aligned}
+\end{equation}
+上式用到了公式 \ref{eq:4point-deviation}的结论。 这里可以看出，在临界状态的有限宽度的神经网络中，
+方差随着深度的加深线性增加。这就表明，深度加深，意味着typical magnitude of the preactivations 
+$\mathcal{O}(l)$ measured on any given realization of the deep linear network may 
+deviate more from the mean value $\mathbb{E}\left[O^{(l)}\right] = G_2^{(l)}$, 即
+输出的抖动 (finite-width fluctuations) 越大。
+
+1), 2), 3)表明三个维度 - non-Gaussianities, intralayer interactions, or finite-width 
+fluctuations都是和网络的depth-to-width ratio成正比。 \emph{Thus, the deeper a network is, 
+the less the infinite-width Gaussian description will apply, due to accumulation of 
+finite-width fluctuations. This is actually a good thing because, infinite-width 
+networks do not have correlations among neurons within a layer and cannot learn 
+nontrivial representations from input data. Real useful deep learning systems 
+that are used in practice do both of these things, and our later analysis will 
+show that deeper networks have the capacity to do more of these things.}
+
+Quite generally, in the regime where perturbation theory works, the finite-width 
+corrections grow linearly - not exponentially - with depth and the network 
+remains well behaved. By contrast, when the depth-to-width ratio becomes large, 
+perturbation theory breaks down, making it very difficult to analyze such networks.
